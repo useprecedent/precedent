@@ -1,7 +1,7 @@
 {
   "name": "@useprecedent/precedent",
   "version": "0.1.4",
-  "description": "Compile Cursor AGENTS.md, CLAUDE.md, and .cursor/rules; report always-on instruction conflicts.",
+  "description": "Compile Cursor AGENTS.md, CLAUDE.md, and .cursor/rules; report always-on conflicts. CLI, GitHub Action, and Cursor skill.",
   "author": "Precedent",
   "type": "module",
   "license": "Apache-2.0",
