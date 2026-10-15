@@ -1,12 +1,24 @@
 <p align="center">
-  <img src="brand/mark.svg" alt="Precedent" width="64" height="64" />
+  <img src="brand/mark.png" alt="Precedent" width="64" height="64" />
 </p>
 
 # Precedent
 
-Compile instruction files for a repository path (Cursor, Claude Code, Codex, Copilot, Gemini), apply documented precedence, and report always-on semantic conflicts. Output is Markdown (human/PR) or JSON (automation).
+Instruction files for coding agents often disagree. Precedent finds them for a path in the repo, applies the order vendors have documented, and reports which statements should win.
 
-The compiler does not guarantee model compliance. It records which statements should win and surfaces unresolved cases when a vendor has not defined an order.
+## What it does
+
+Your agent does not read one rulebook. It can pick up `AGENTS.md`, Cursor rules, `CLAUDE.md`, Copilot instructions, Gemini files, plugin rules, and copies of those in your home folder — at the same time. Two of them can say opposite things. Example: “the agent runs terminal commands” vs “you will run every command.”
+
+Precedent answers three questions for this path:
+
+1. **Which instructions are in force?** It finds the files, keeps the ones that always apply, and drops the ones that only apply to some globs, skills, or nested apps.
+2. **When they disagree, who wins?** Team over project over user. A nested `AGENTS.md` applies only under its directory. If two files at the same layer disagree and the vendor has not published an order, that is **unresolved** — the agent should ask before doing that thing.
+3. **What was skipped?** **Left out** lists files that exist but are not in force here, so you can see a rule was found and why it did not apply.
+
+You run it as a [CLI](#install-cli), a [GitHub Action](#github-action) comment on pull requests, or a [skill](#use-with-your-coding-tool) inside Cursor, Claude Code, Codex, Copilot, or Gemini. Markdown for people and PRs; JSON for automation.
+
+Precedent does not watch the model. A clean report means the files have a documented winner, not that the agent obeyed it.
 
 ## Components
 

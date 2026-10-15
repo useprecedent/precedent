@@ -11,9 +11,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ### Changed
 
+- README opens with a plain-English “What it does” section.
+- README and org profile use `brand/mark.png` instead of `brand/mark.svg`. Square mark is `brand/mark.png`; wordmark lockup is `brand/precedent.png`.
 - README Action example pins `v1.4` (`41b4416`).
 - README and skill document skill activation: `description` is description-gated; `disable-model-invocation: true` stays named-only.
 - Action path filters watch pack rule files as `**/*.mdc`, `**/rules/*.md`, and `**/rules/*.markdown`; `**/.cursor-plugin/**` only matches pack metadata.
+
+### Removed
+
+- `brand/mark.svg` (incorrect mark).
+- Duplicate rasters `brand/p-precedent.png` (same as `brand/mark.png`) and `brand/logo.png` (same as `brand/precedent.png`).
 
 ## 1.0.0 - 2026-10-15
 
