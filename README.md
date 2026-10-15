@@ -194,7 +194,7 @@ Pass chat-only rules without faking paths:
 npx @useprecedent/precedent --root . --extra-rules extra-rules.json
 ```
 
-`extra-rules.json` is a JSON array of `{ "layer": "team" | "user", "title": string, "text": string }`.
+`extra-rules.json` is a JSON array of `{ "layer": "team" | "user", "title": string, "text": string }`. Those entries are tagged as Cursor-layer sources. They participate in `--ecosystem all` and `--ecosystem cursor` compiles only.
 
 ## Precedence (v1, always-on)
 
