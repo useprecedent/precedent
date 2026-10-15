@@ -7,6 +7,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 ### Changed
 
 - README Action example pins `v1.3` (`3972603`).
+- README documents skill install and `--ecosystem` for Cursor, Claude Code, Codex, Copilot, and Gemini CLI.
 
 ## 0.1.5 - 2026-10-15
 

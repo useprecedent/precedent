@@ -1,7 +1,7 @@
 {
   "name": "@useprecedent/precedent",
   "version": "0.1.5",
-  "description": "Compile AGENTS.md, CLAUDE.md, Copilot instructions, and editor rules; report always-on conflicts. CLI, GitHub Action, and Cursor skill.",
+  "description": "Compile AGENTS.md, CLAUDE.md, Copilot instructions, and editor rules; report always-on conflicts. CLI, GitHub Action, and coding-agent skill.",
   "author": "Precedent",
   "type": "module",
   "license": "Apache-2.0",
