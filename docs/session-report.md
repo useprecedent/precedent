@@ -1,16 +1,16 @@
-# Session report (Cursor skill)
+# Session report (skill)
 
-The Cursor skill prints **Effective instructions** for the open workspace and the files this task touches. It is not the same artifact as the GitHub Action comment: the skill can include team rules and Cursor-settings user rules from the chat; the Action compiles git only unless you pass `--extra-rules`.
+The skill prints **Effective instructions** for the open workspace and the files this task touches. It is not the same artifact as the GitHub Action comment: in a Cursor session the skill can include team rules and settings user rules from the chat; the Action compiles git only unless you pass `--extra-rules`.
 
 ## How to run
 
-Install once:
+Install once for your agent — commands for Cursor, Claude Code, Codex, Copilot, and Gemini CLI are in the [README](../README.md#use-with-your-coding-tool). Cursor example:
 
 ```bash
 npx skills add useprecedent/precedent -a cursor -g --skill precedent -y
 ```
 
-In Cursor, ask for effective policy, conflicting rules, or use your team slash command if you alias the skill (for example `/instruction-compiler` in an internal hub).
+Ask for effective policy, conflicting rules, or invoke `/precedent` if your agent exposes slash skills. Internal hubs can alias the same skill (for example `/instruction-compiler`).
 
 ## Sections
 

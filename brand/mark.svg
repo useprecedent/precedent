@@ -1,5 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Precedent">
-  <rect width="64" height="64" rx="12" fill="#1E3A8A"/>
-  <path fill="#93C5FD" d="M24 14h18c8 0 8 16 0 16H32v18h-8V14zm8 6v10h8c3.5 0 3.5-10 0-10H32z"/>
-  <path fill="#F8FAFC" d="M20 10h18c8 0 8 16 0 16H28v18h-8V10zm8 6v10h8c3.5 0 3.5-10 0-10H28z"/>
+  <rect width="64" height="64" fill="#ffffff"/>
+  <g fill="#1E3A8A" fill-rule="evenodd" stroke="#ffffff" stroke-width="2.4" stroke-linejoin="round">
+    <path transform="translate(9.2 -7.4)" d="M20.5 14h15.2c7.4 0 7.4 15.6 0 15.6H28.2V50h-7.7V14zm7.7 5.8v9.8h6.8c3.4 0 3.4-9.8 0-9.8h-6.8z"/>
+    <path transform="translate(4.6 -3.7)" d="M20.5 14h15.2c7.4 0 7.4 15.6 0 15.6H28.2V50h-7.7V14zm7.7 5.8v9.8h6.8c3.4 0 3.4-9.8 0-9.8h-6.8z"/>
+    <path d="M20.5 14h15.2c7.4 0 7.4 15.6 0 15.6H28.2V50h-7.7V14zm7.7 5.8v9.8h6.8c3.4 0 3.4-9.8 0-9.8h-6.8z"/>
+  </g>
 </svg>

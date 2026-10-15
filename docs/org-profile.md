@@ -1,6 +1,12 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/useprecedent/precedent/main/brand/mark.svg" alt="Precedent" width="64" height="64" />
+</p>
+
 # Precedent
 
 Compile the effective instruction set for a repository path. Report always-on conflicts with citations.
+
+Mark: stacked P, indigo `#1E3A8A` on white (`brand/mark.svg`, `brand/favicon.svg`). Raster uploads for the GitHub org avatar, npm icon, and profile header live in the Product Hub kit, not in this repository.
 
 This organization publishes [useprecedent/precedent](https://github.com/useprecedent/precedent) and [@useprecedent/precedent](https://www.npmjs.com/package/@useprecedent/precedent) (Apache-2.0).
 
