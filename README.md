@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="brand/logo.png" alt="Precedent" width="360" />
+</p>
+
 # Precedent
 
 **Effective policy for this path.**
