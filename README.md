@@ -275,6 +275,7 @@ on:
       - ".cursor/rules/**"
       - ".cursor/plugins/**"
       - "**/.cursor-plugin/**"
+      - "**/*.mdc"
       - ".cursor/skills/**"
       - ".agents/skills/**"
       - ".claude/**"
@@ -295,7 +296,7 @@ jobs:
           fail-on-unresolved: false
 ```
 
-The Action compiles from git only. Team rules and Cursor settings user rules are out of scope unless committed or passed via a custom workflow that supplies `--extra-rules`. `.cursor/plugins/**` watches in-repo plugin rules and plugin skills; `**/.cursor-plugin/**` watches pack folders anywhere in the repo.
+The Action compiles from git only. Team rules and Cursor settings user rules are out of scope unless committed or passed via a custom workflow that supplies `--extra-rules`. `.cursor/plugins/**` watches in-repo plugin rules and plugin skills. Pack rule files live in a sibling `rules/` directory, which GitHub path filters cannot bind to `.cursor-plugin`; `**/*.mdc` watches those Cursor rule files, and `**/.cursor-plugin/**` watches pack metadata.
 
 ## Limits
 

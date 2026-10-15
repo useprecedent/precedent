@@ -12,6 +12,7 @@ on:
       - ".cursor/rules/**"
       - ".cursor/plugins/**"
       - "**/.cursor-plugin/**"
+      - "**/*.mdc"
       - ".cursor/skills/**"
       - ".agents/skills/**"
       - ".claude/**"
