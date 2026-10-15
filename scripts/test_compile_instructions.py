@@ -125,6 +125,66 @@ class CompileInstructionsTest(unittest.TestCase):
         self.assertIn("The user runs every command.", user["body"])
         self.assertEqual(sources[-1]["path"], user["path"])
 
+    def test_inventory_plugin_rules_and_user_skills(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            home = (Path(tmp) / "home").resolve()
+            root = (home / "projects" / "app").resolve()
+            write(root / "AGENTS.md", "Root agents file.\n")
+            write(
+                root / ".cursor" / "plugins" / "ship" / "rules" / "always.mdc",
+                "---\nalwaysApply: true\n---\n\nBind HTTP servers to 0.0.0.0.\n",
+            )
+            write(
+                root / ".cursor" / "plugins" / "ship" / "skills" / "deploy" / "SKILL.md",
+                "---\nname: deploy\ndescription: Deploy the app\n---\n\nDeploy skill.\n",
+            )
+            write(
+                root / ".cursor" / "skills" / "gated" / "SKILL.md",
+                "---\nname: gated\ndescription: Use when gating\ndisable-model-invocation: true\n---\n\nGated skill.\n",
+            )
+            write(root / "pack" / ".cursor-plugin" / "plugin.json", '{"name":"pack"}\n')
+            write(
+                root / "pack" / "rules" / "always.mdc",
+                "---\nalwaysApply: true\n---\n\nPack always-on plugin rule.\n",
+            )
+            write(home / ".cursor" / "skills" / "personal" / "SKILL.md", "Personal cursor skill.\n")
+            write(home / ".cursor" / "skills-cursor" / "builtin" / "SKILL.md", "Ignore builtin.\n")
+            write(
+                home / ".cursor" / "plugins" / "local" / "acme" / "rules" / "local-always.mdc",
+                "---\nalwaysApply: true\n---\n\nLocal plugin always-on rule.\n",
+            )
+            write(
+                home / ".cursor" / "plugins" / "cache" / "marketplace" / "rules" / "cache-always.mdc",
+                "---\nalwaysApply: true\n---\n\nCache plugin must not be inventoried.\n",
+            )
+
+            completed = compile_workspace(root, home)
+
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        payload = json.loads(completed.stdout)
+        by_path = {source["path"]: source for source in payload["sources"]}
+        plugin = by_path[".cursor/plugins/ship/rules/always.mdc"]
+        self.assertEqual(plugin["kind"], "plugin-rule")
+        self.assertEqual(plugin["activation"], "always")
+        self.assertEqual(plugin["layer"], "project")
+        self.assertIn("Bind HTTP servers", plugin["body"])
+        skill = by_path[".cursor/plugins/ship/skills/deploy/SKILL.md"]
+        self.assertEqual(skill["kind"], "skill")
+        self.assertEqual(skill["activation"], "intelligent")
+        gated = by_path[".cursor/skills/gated/SKILL.md"]
+        self.assertEqual(gated["kind"], "skill")
+        self.assertEqual(gated["activation"], "manual")
+        pack = by_path["pack/rules/always.mdc"]
+        self.assertEqual(pack["kind"], "plugin-rule")
+        personal = next(source for source in payload["sources"] if source["path"].endswith("skills/personal/SKILL.md"))
+        self.assertEqual(personal["layer"], "user")
+        local = next(source for source in payload["sources"] if str(source["path"]).endswith("local-always.mdc"))
+        self.assertEqual(local["kind"], "plugin-rule")
+        self.assertEqual(local["layer"], "user")
+        self.assertFalse(any("skills-cursor" in str(source["path"]) for source in payload["sources"]))
+        self.assertFalse(any("cache-always.mdc" in str(source["path"]) for source in payload["sources"]))
+        self.assertIn("Cursor marketplace plugins (enabled set is not on disk)", payload["missingFromDisk"])
+
     def test_redacts_secrets_in_inventory_bodies(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             home = (Path(tmp) / "home").resolve()

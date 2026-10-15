@@ -1,4 +1,5 @@
-import { basename, dirname } from "node:path";
+import { statSync } from "node:fs";
+import { basename, dirname, join } from "node:path";
 import type { Ecosystem, Kind, Source } from "./types.ts";
 
 export const DOCUMENT_NAMES = new Set([
@@ -17,6 +18,29 @@ export function isEcosystem(value: string): value is Ecosystem {
   return (ECOSYSTEMS as string[]).includes(value);
 }
 
+export function isRuleFileName(name: string): boolean {
+  if (name === "SKILL.md") return false;
+  return name.endsWith(".mdc") || name.endsWith(".markdown") || name.endsWith(".md");
+}
+
+export function isCursorPluginRulePath(path: string): boolean {
+  const name = basename(path);
+  const parent = basename(dirname(path));
+  if (parent !== "rules" || !isRuleFileName(name)) return false;
+  const segments = path.split(/[/\\]/);
+  return segments.some((segment, index) => segment === ".cursor" && segments[index + 1] === "plugins");
+}
+
+export function isPluginPackRule(path: string): boolean {
+  const dir = dirname(path);
+  if (basename(dir) !== "rules" || !isRuleFileName(basename(path))) return false;
+  try {
+    return statSync(join(dirname(dir), ".cursor-plugin")).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
 export function kindFor(path: string): Kind {
   const name = basename(path);
   const parent = basename(dirname(path));
@@ -26,6 +50,7 @@ export function kindFor(path: string): Kind {
   if (name === "GEMINI.md") return "gemini-md";
   if (name === "copilot-instructions.md") return "copilot-instructions";
   if (name.endsWith(".instructions.md")) return "copilot-path-instructions";
+  if (isCursorPluginRulePath(path) || isPluginPackRule(path)) return "plugin-rule";
   if (name === "SKILL.md" || parent === "commands") return "skill";
   if (parent === "rules" && grand === ".claude" && name.endsWith(".md")) return "claude-rule";
   if (name.endsWith(".mdc")) return "project-rule";
@@ -51,9 +76,13 @@ export function ecosystemsFor(kind: Kind, path = ""): Ecosystem[] {
   if (kind === "copilot-instructions" || kind === "copilot-path-instructions") return ["copilot"];
   if (kind === "skill") {
     if (segments.includes(".claude")) return ["claude-code"];
+    if (segments.includes(".codex")) return ["codex"];
+    if (segments.includes(".copilot")) return ["copilot"];
+    if (segments.includes(".gemini")) return ["gemini"];
+    if (segments.includes(".agents")) return ["cursor", "codex", "copilot", "gemini"];
     return ["cursor"];
   }
-  if (kind === "project-rule" || kind === "team-rule") return ["cursor"];
+  if (kind === "project-rule" || kind === "plugin-rule" || kind === "team-rule") return ["cursor"];
   return ["cursor"];
 }
 

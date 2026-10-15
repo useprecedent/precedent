@@ -4,9 +4,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## Unreleased
 
+### Added
+
+- Skills and plugins as a fourth instruction source: always-on Cursor plugin rules join the merge; requestable skills and plugin rules are inventoried and left out until the task matches them.
+- Inventory for `.cursor/plugins/**/rules`, `.cursor-plugin` packs, `~/.cursor/plugins/local`, and user-home `SKILL.md` files (`~/.cursor/skills`, `~/.claude/skills`, `~/.agents/skills`, `~/.copilot/skills`, `~/.gemini/skills`). `~/.cursor/skills-cursor` and marketplace plugin cache are not inventoried.
+
 ### Changed
 
+- README opens with a plain-English “What it does” section.
+- README and org profile use `brand/mark.png` instead of `brand/mark.svg`. Square mark is `brand/mark.png`; wordmark lockup is `brand/precedent.png`.
 - README Action example pins `v1.4` (`41b4416`).
+- README and skill document skill activation: `description` is description-gated; `disable-model-invocation: true` stays named-only.
+- Action path filters watch pack rule files as `**/*.mdc`, `**/rules/*.md`, and `**/rules/*.markdown`; `**/.cursor-plugin/**` only matches pack metadata.
+
+### Removed
+
+- `brand/mark.svg` (incorrect mark).
+- Duplicate rasters `brand/p-precedent.png` (same as `brand/mark.png`) and `brand/logo.png` (same as `brand/precedent.png`).
 
 ## 1.0.0 - 2026-10-15
 

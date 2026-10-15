@@ -1,7 +1,7 @@
 <!-- Draft of the github.com/useprecedent profile. Live file: useprecedent/.github/profile/README.md. Keep the body below in sync. Do not copy this comment to the live profile. -->
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/useprecedent/precedent/main/brand/mark.svg" alt="Precedent" width="64" height="64" />
+  <img src="https://raw.githubusercontent.com/useprecedent/precedent/main/brand/mark.png" alt="Precedent" width="64" height="64" />
 </p>
 
 # Precedent

@@ -85,10 +85,15 @@ function covers(root: string, appliesUnder: string, target: string): boolean {
 }
 
 function leftOutReason(source: Source): string {
-  if (source.kind === "skill") return "skill; requestable; not merged in v1";
+  if (source.kind === "skill") {
+    if (source.activation === "intelligent")
+      return "skill; requestable from description; out of the merge unless this task matches";
+    return "skill; requestable; out of the merge unless the user named it";
+  }
+  const plugin = source.kind === "plugin-rule" ? "plugin rule; " : "";
   if (source.activation === "glob")
-    return `glob ${source.globs.join(", ") || "(none)"}; out of semantic v1 until a task matches`;
+    return `${plugin}glob ${source.globs.join(", ") || "(none)"}; out of semantic v1 until a task matches`;
   if (source.activation === "intelligent")
-    return "intelligent; out of semantic v1 until a task matches its description";
-  return "manual; out of the merge unless the user named it";
+    return `${plugin}intelligent; out of semantic v1 until a task matches its description`;
+  return `${plugin}manual; out of the merge unless the user named it`;
 }

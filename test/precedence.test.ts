@@ -62,6 +62,66 @@ describe("precedence", () => {
     assert.equal(report.inForce.some((item) => item.kind === "skill"), false);
   });
 
+  it("merges always-on plugin rules and leaves requestable plugin sources out", () => {
+    const root = tempDir();
+    write(root, "AGENTS.md", "Root policy is always on.");
+    write(
+      root,
+      ".cursor/plugins/ship/rules/always.mdc",
+      "---\nalwaysApply: true\n---\nBind HTTP servers to 0.0.0.0.\n",
+    );
+    write(
+      root,
+      ".cursor/plugins/ship/rules/requestable.mdc",
+      "---\ndescription: Use when deploying to ship\n---\nShip deploy notes.\n",
+    );
+    write(
+      root,
+      ".cursor/plugins/ship/skills/deploy/SKILL.md",
+      "---\nname: deploy\ndescription: Deploy the app\n---\nDeploy skill.\n",
+    );
+
+    const report = compile(options(root));
+    assert.ok(report.inForce.some((item) => item.path === ".cursor/plugins/ship/rules/always.mdc"));
+    const requestable = report.leftOut.find((item) => item.path === ".cursor/plugins/ship/rules/requestable.mdc");
+    assert.ok(requestable);
+    assert.match(requestable.reason, /plugin rule/);
+    const skill = report.leftOut.find((item) => item.path === ".cursor/plugins/ship/skills/deploy/SKILL.md");
+    assert.ok(skill);
+    assert.match(skill.reason, /skill/);
+  });
+
+  it("treats always-on plugin rules and covering AGENTS.md as one unresolved layer", () => {
+    const root = tempDir();
+    write(root, "AGENTS.md", "The agent runs terminal commands. Do not ask the user to run them.\n");
+    write(
+      root,
+      ".cursor/plugins/ship/rules/commands.mdc",
+      "---\nalwaysApply: true\n---\nI (the user) WILL RUN ALL TERMINAL COMMANDS YOU WILL NOT.\n",
+    );
+
+    const report = compile(options(root));
+    assert.equal(report.conflicts.length, 0);
+    assert.equal(report.unresolved.length, 1);
+    assert.equal(report.unresolved[0]?.behavior, "who runs terminal commands");
+  });
+
+  it("lets a project covering document win over a user-local always-on plugin rule", () => {
+    const home = tempDir("precedent-home-");
+    const root = tempDir();
+    write(root, "AGENTS.md", "The agent runs terminal commands. Do not ask the user to run them.\n");
+    write(
+      home,
+      ".cursor/plugins/local/acme/rules/commands.mdc",
+      "---\nalwaysApply: true\n---\nI (the user) WILL RUN ALL TERMINAL COMMANDS YOU WILL NOT.\n",
+    );
+
+    const report = compile({ ...options(root), home, includeUserRules: true });
+    assert.equal(report.unresolved.length, 0);
+    assert.equal(report.conflicts.length, 1);
+    assert.equal(report.conflicts[0]?.effective?.layer, "project");
+  });
+
   it("scopes a compile to one ecosystem", () => {
     const root = tempDir();
     write(root, "AGENTS.md", "Shared agents file.");
