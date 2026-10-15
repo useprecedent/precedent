@@ -8,6 +8,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 - README Action example pins `v1.3` (`3972603`).
 - README documents skill install and `--ecosystem` for Cursor, Claude Code, Codex, Copilot, and Gemini CLI.
+- Codex global skill path is `~/.agents/skills/precedent/` (`npx skills add -a codex -g`), not `~/.codex/skills`.
 
 ## 0.1.5 - 2026-10-15
 

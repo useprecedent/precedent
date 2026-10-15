@@ -55,7 +55,7 @@ Internal slash commands (for example `/instruction-compiler`) can point at the s
 | --- | --- |
 | Cursor | `~/.cursor/skills/precedent/` |
 | Claude Code | `~/.claude/skills/precedent/` |
-| Codex | `~/.codex/skills/precedent/` |
+| Codex | `~/.agents/skills/precedent/` |
 | GitHub Copilot | `~/.copilot/skills/precedent/` |
 | Gemini CLI | `~/.gemini/skills/precedent/` |
 
