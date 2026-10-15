@@ -1,0 +1,51 @@
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+import { compile } from "../src/compile.ts";
+import { options, tempDir, write } from "./helpers.ts";
+
+describe("semantic v1", () => {
+  it("finds the command-running clash as unresolved at the project layer", () => {
+    const root = tempDir();
+    write(root, "AGENTS.md", "# Agents\n\nThe agent runs terminal commands. Do not ask the user to run them.\n");
+    write(
+      root,
+      ".cursor/rules/commands.mdc",
+      "---\nalwaysApply: true\n---\n\nI (the user) WILL RUN ALL TERMINAL COMMANDS YOU WILL NOT.\n",
+    );
+
+    const report = compile(options(root));
+
+    assert.equal(report.conflicts.length, 0);
+    assert.equal(report.unresolved.length, 1);
+    assert.equal(report.unresolved[0]?.behavior, "who runs terminal commands");
+    assert.equal(report.unresolved[0]?.evidence, "inferred");
+    assert.ok(report.unresolved[0]?.statements.some((item) => item.path.includes("AGENTS.md")));
+    assert.ok(report.unresolved[0]?.statements.some((item) => item.path.includes("commands.mdc")));
+  });
+
+  it("finds the TDD vs only-when-requested clash", () => {
+    const root = tempDir();
+    write(root, "AGENTS.md", "Always write tests. Practice TDD on every change.\n");
+    write(root, ".cursor/rules/tests.mdc", "---\nalwaysApply: true\n---\n\nOnly add tests when requested.\n");
+
+    const report = compile(options(root));
+
+    assert.equal(report.unresolved.length, 1);
+    assert.equal(report.unresolved[0]?.behavior, "when to add tests");
+  });
+
+  it("does not flag paraphrases of the same action as a conflict", () => {
+    const root = tempDir();
+    write(root, "AGENTS.md", "The agent runs terminal commands for this repo.\n");
+    write(
+      root,
+      ".cursor/rules/same.mdc",
+      "---\nalwaysApply: true\n---\n\nYou will run all terminal commands. Do not ask the user to run them.\n",
+    );
+
+    const report = compile(options(root));
+
+    assert.equal(report.conflicts.length, 0);
+    assert.equal(report.unresolved.length, 0);
+  });
+});

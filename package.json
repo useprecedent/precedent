@@ -1,0 +1,43 @@
+{
+  "name": "@jakearmijo/precedent",
+  "version": "0.1.0",
+  "description": "Compile the effective Cursor instruction set for a repo path and report always-on conflicts.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "bin": {
+    "precedent": "./bin/precedent.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "scripts",
+    "SKILL.md",
+    "LICENSE",
+    "README.md",
+    "action.yml"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jakearmijo/precedent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jakearmijo/precedent/issues"
+  },
+  "homepage": "https://github.com/jakearmijo/precedent#readme",
+  "keywords": [
+    "cursor",
+    "agents.md",
+    "claude.md",
+    "rules",
+    "policy",
+    "github-action"
+  ],
+  "scripts": {
+    "precedent": "node --experimental-strip-types src/cli.ts",
+    "test": "python3 scripts/test_compile_instructions.py && node --experimental-strip-types --test test/*.test.ts",
+    "compile": "node --experimental-strip-types src/cli.ts"
+  }
+}

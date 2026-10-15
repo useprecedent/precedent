@@ -1,0 +1,28 @@
+name: Precedent
+description: Compile Cursor instructions and comment on PRs when always-on policy conflicts
+author: Jake Armijo
+branding:
+  icon: git-pull-request
+  color: purple
+inputs:
+  fail-on-unresolved:
+    description: Fail the check when unresolved always-on conflicts exist
+    required: false
+    default: "false"
+  token:
+    description: GitHub token used to comment on the pull request
+    required: false
+    default: ${{ github.token }}
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: "22"
+    - name: Compile and comment
+      shell: bash
+      env:
+        INPUT_FAIL_ON_UNRESOLVED: ${{ inputs.fail-on-unresolved }}
+        INPUT_TOKEN: ${{ inputs.token }}
+        GITHUB_TOKEN: ${{ inputs.token }}
+      run: node --experimental-strip-types "$GITHUB_ACTION_PATH/src/action.ts"
