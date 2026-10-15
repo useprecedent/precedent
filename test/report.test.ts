@@ -1,16 +1,25 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { compile } from "../src/compile.ts";
-import { renderMarkdown, renderPrComment } from "../src/report.ts";
+import { compareUrlForRef, renderMarkdown, renderPrComment } from "../src/report.ts";
 import { options, tempDir, write } from "./helpers.ts";
 
 describe("report contract", () => {
+  it("builds compare URLs with short SHAs", () => {
+    const url = compareUrlForRef(
+      "practicelink/pl-cmp",
+      "a1b2c3d4e5f6789012345678901234567890abcd",
+      "e4f5a6b7c8d9012345678901234567890abcd",
+    );
+    assert.equal(url, "https://github.com/practicelink/pl-cmp/compare/a1b2c3d...e4f5a6b");
+  });
+
   it("uses directory basename as local subject", () => {
     const root = tempDir("my-repo-");
     write(root, "README.md", "ok\n");
     const report = compile(options(root));
     const md = renderMarkdown(report);
-    assert.match(md, /\*\*Subject:\*\* my-repo-/);
+    assert.match(md, /^# Precedent\n\nmy-repo-/m);
     assert.doesNotMatch(md, /\/home\/runner\//);
   });
 
@@ -29,6 +38,9 @@ describe("report contract", () => {
     );
     assert.match(md, /<!-- precedent-report -->/);
     assert.match(md, /No new always-on instruction conflicts relative to main/);
-    assert.match(md, /Rules not stored in git are not included/);
+    assert.match(md, /^Scope: always-on/m);
+    assert.doesNotMatch(md, /Compile path/);
+    assert.doesNotMatch(md, /## Findings/);
+    assert.doesNotMatch(md, /## Provenance/);
   });
 });

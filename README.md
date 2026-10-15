@@ -66,39 +66,35 @@ Contradiction detection is **inferred**. Paraphrases of the same action are not 
 
 ## Sample report
 
-CLI and the GitHub Action use the same Markdown schema.
+CLI and the GitHub Action share one schema. Empty PR deltas use a short compile note; PRs with new conflicts expand scope and numbered findings.
+
+Empty delta (typical Action comment):
 
 ```
 # Precedent
 
-**Subject:** practicelink/pl-cmp
+practicelink/pl-cmp
 
-## Provenance
+Base a1b2c3d (main) · head e4f5g6h · https://github.com/practicelink/pl-cmp/compare/a1b2c3d...e4f5g6h
 
-- Event: pull_request
-- Base: a1b2c3d (main)
-- Head: e4f5g6h
-- Compare: https://github.com/practicelink/pl-cmp/compare/a1b2c3d...e4f5g6h
+Scope: always-on · 8 git sources, 4 in force · team rules and Cursor settings user rules are not in this report.
 
-## Scope
-
-- Activation: always-on
-- Compile path: `.`
-- Sources: 9 compiled, 6 in force
-- Out of this report: team rules; user rules stored in Cursor settings
-
-## Findings
-
-1. **who runs terminal commands** (`unresolved`, inferred)
-   - statement: The agent runs terminal commands. (`AGENTS.md:3`)
-   - statement: I (the user) WILL RUN ALL TERMINAL COMMANDS YOU WILL NOT. (`.cursor/rules/user-commands.mdc:4`)
-
-9 sources compiled. Rules not stored in git are not included in this report.
+No new always-on instruction conflicts relative to main.
 
 <details>
 <summary>Methodology</summary>
 ...
 </details>
+```
+
+New conflict on a PR (abbreviated):
+
+```
+## Findings
+
+1. **who runs terminal commands** (`unresolved`, inferred)
+   - statement: The agent runs terminal commands. (`AGENTS.md:3`)
+   - statement: I (the user) WILL RUN ALL TERMINAL COMMANDS YOU WILL NOT. (`.cursor/rules/user-commands.mdc:4`)
 ```
 
 ## GitHub Action

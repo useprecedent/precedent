@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { compile, newFindings } from "./compile.ts";
 import { defaultHome } from "./inventory.ts";
-import { renderPrComment, shortSha } from "./report.ts";
+import { compareUrlForRef, renderPrComment, shortSha } from "./report.ts";
 
 const COMMENT_MARKER = "<!-- precedent-report -->";
 
@@ -94,7 +94,7 @@ async function main(): Promise<void> {
     const pr = event.pull_request;
     baseRef = pr.base.ref;
     const baseSha = shortSha(pr.base.sha);
-    const compareUrl = `https://github.com/${repository}/compare/${pr.base.sha}...${pr.head.sha}`;
+    const compareUrl = compareUrlForRef(repository, pr.base.sha, pr.head.sha);
     provenance = {
       event: eventName,
       baseRef,

@@ -33,6 +33,16 @@ export function shortSha(sha: string | undefined): string | undefined {
   return sha.length > 7 ? sha.slice(0, 7) : sha;
 }
 
+export function compareUrlForRef(
+  repository: string,
+  baseSha: string,
+  headSha: string,
+): string {
+  const base = shortSha(baseSha) ?? baseSha;
+  const head = shortSha(headSha) ?? headSha;
+  return `https://github.com/${repository}/compare/${base}...${head}`;
+}
+
 export function renderReport(input: ReportRenderInput): string {
   const {
     report,
@@ -49,10 +59,13 @@ export function renderReport(input: ReportRenderInput): string {
     ? [...delta.conflicts, ...delta.unresolved]
     : [...report.conflicts, ...report.unresolved];
 
+  const compactEmptyPr = mode === "pr_delta" && findings.length === 0 && Boolean(baseRef);
+  if (compactEmptyPr) return renderCompactEmptyPrDelta(report, subject, baseRef!, provenance, includeMarker);
+
   const lines: string[] = [];
   if (includeMarker) lines.push("<!-- precedent-report -->", "");
 
-  lines.push("# Precedent", "", `**Subject:** ${subject}`, "");
+  lines.push("# Precedent", "", subject, "");
 
   if (provenance) {
     lines.push("## Provenance", "");
@@ -69,9 +82,9 @@ export function renderReport(input: ReportRenderInput): string {
   }
 
   lines.push("## Scope", "");
-  lines.push(`- Activation: always-on`);
-  lines.push(`- Compile path: \`${compilePath}\``);
-  lines.push(`- Sources: ${report.sources.length} compiled, ${report.inForce.length} in force`);
+  lines.push("- Activation: always-on");
+  if (compilePath !== ".") lines.push(`- Compile path: \`${compilePath}\``);
+  lines.push(`- Sources: ${report.sources.length} on disk, ${report.inForce.length} in force`);
   const pathScoped = [
     ...new Set(
       report.inForce
@@ -83,7 +96,9 @@ export function renderReport(input: ReportRenderInput): string {
     lines.push(`- Path-scoped: ${pathScoped.join("; ")}`);
   }
   if (report.leftOut.length > 0) {
-    lines.push(`- Left out: ${report.leftOut.length} sources (glob, intelligent, manual, or outside compile path)`);
+    lines.push(
+      `- Excluded from merge: ${report.leftOut.length} sources (glob, intelligent, manual, or outside compile path)`,
+    );
   }
   lines.push(`- Out of this report: ${report.missingFromDisk.join("; ")}`);
   lines.push("");
@@ -96,14 +111,61 @@ export function renderReport(input: ReportRenderInput): string {
       lines.push("No always-on instruction conflicts.");
     }
     lines.push("");
-    lines.push(scopeFooter(report));
   } else {
     lines.push(...renderNumberedFindings(findings));
     lines.push("");
-    lines.push(scopeFooter(report));
   }
 
-  lines.push(
+  lines.push(...methodologyBlock());
+
+  return lines.join("\n").trim() + "\n";
+}
+
+function renderCompactEmptyPrDelta(
+  report: Report,
+  subject: string,
+  baseRef: string,
+  provenance: ReportProvenance | null,
+  includeMarker: boolean,
+): string {
+  const lines: string[] = [];
+  if (includeMarker) lines.push("<!-- precedent-report -->", "");
+  lines.push("# Precedent", "", subject, "");
+  const prov = formatProvenanceLine(provenance);
+  if (prov) lines.push(prov, "");
+  lines.push(compactScopeLine(report), "");
+  lines.push(`No new always-on instruction conflicts relative to ${baseRef}.`, "");
+  lines.push(...methodologyBlock());
+  return lines.join("\n").trim() + "\n";
+}
+
+function formatProvenanceLine(provenance: ReportProvenance | null): string {
+  if (!provenance) return "";
+  const parts: string[] = [];
+  if (provenance.baseSha || provenance.baseRef) {
+    const base = [provenance.baseSha, provenance.baseRef ? `(${provenance.baseRef})` : null]
+      .filter(Boolean)
+      .join(" ");
+    parts.push(`Base ${base}`);
+  }
+  if (provenance.headSha) parts.push(`head ${provenance.headSha}`);
+  if (provenance.compareUrl) parts.push(provenance.compareUrl);
+  return parts.join(" · ");
+}
+
+function compactScopeLine(report: Report): string {
+  const excluded = outOfReportSentence(report);
+  return `Scope: always-on · ${report.sources.length} git sources, ${report.inForce.length} in force · ${excluded}`;
+}
+
+function outOfReportSentence(report: Report): string {
+  const hasExtra = report.sources.some((source) => source.kind === "team-rule");
+  if (hasExtra) return "other Cursor settings rules are not in this report";
+  return "team rules and Cursor settings user rules are not in this report";
+}
+
+function methodologyBlock(): string[] {
+  return [
     "<details>",
     "<summary>Methodology</summary>",
     "",
@@ -113,18 +175,7 @@ export function renderReport(input: ReportRenderInput): string {
     "",
     "This report does not prove model compliance.",
     "</details>",
-  );
-
-  return lines.join("\n").trim() + "\n";
-}
-
-function scopeFooter(report: Report): string {
-  const hasExtra = report.sources.some((source) => source.kind === "team-rule");
-  const gitOnly =
-    hasExtra
-      ? "Team or user rules passed via flags are included; other Cursor settings rules are not."
-      : "Rules not stored in git are not included in this report.";
-  return `${report.sources.length} sources compiled. ${gitOnly}`;
+  ];
 }
 
 function renderNumberedFindings(findings: Conflict[]): string[] {

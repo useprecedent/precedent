@@ -55,7 +55,8 @@ describe("compile + report", () => {
       },
     });
     assert.match(rendered, /^# Precedent/m);
-    assert.match(rendered, /\*\*Subject:\*\* acme\/widget/);
+    assert.match(rendered, /acme\/widget/);
+    assert.match(rendered, /## Findings/);
     assert.match(rendered, /who runs terminal commands/);
   });
 });
