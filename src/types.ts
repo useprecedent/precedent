@@ -12,6 +12,7 @@ export type Kind =
   | "copilot-instructions"
   | "copilot-path-instructions"
   | "claude-rule"
+  | "plugin-rule"
   | "skill";
 
 export type Activation = "always" | "glob" | "intelligent" | "manual";

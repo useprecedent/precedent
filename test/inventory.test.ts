@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, it } from "node:test";
+import { kindFor } from "../src/ecosystems.ts";
 import { compile } from "../src/compile.ts";
 import { collectInventory } from "../src/inventory.ts";
 import { link, options, tempDir, write } from "./helpers.ts";
@@ -70,8 +71,14 @@ describe("inventory", () => {
     write(root, ".claude/rules/always.md", "Always-on Claude rule.");
     write(root, ".claude/rules/scoped.md", "---\npaths: src/**/*.ts\n---\nScoped Claude rule.\n");
     write(root, ".cursor/skills/demo/SKILL.md", "A requestable skill.");
+    write(
+      root,
+      ".cursor/skills/gated/SKILL.md",
+      "---\nname: gated\ndescription: Use when gating\ndisable-model-invocation: true\n---\nGated skill.\n",
+    );
     write(root, ".cursor/skills/demo.claude/SKILL.md", "Cursor skill whose folder name contains .claude.");
     write(root, ".claude/skills/demo/SKILL.md", "Claude Code skill.");
+    write(root, ".agents/skills/shared/SKILL.md", "Shared agents skill.");
     write(root, "AGENTS.override.md", "Codex override.");
 
     const sources = collectInventory({
@@ -101,8 +108,10 @@ describe("inventory", () => {
     assert.deepEqual(byPath["AGENTS.override.md"]?.ecosystems, ["codex"]);
     assert.equal(byPath[".cursor/skills/demo/SKILL.md"]?.kind, "skill");
     assert.equal(byPath[".cursor/skills/demo/SKILL.md"]?.activation, "manual");
+    assert.equal(byPath[".cursor/skills/gated/SKILL.md"]?.activation, "manual");
     assert.deepEqual(byPath[".cursor/skills/demo.claude/SKILL.md"]?.ecosystems, ["cursor"]);
     assert.deepEqual(byPath[".claude/skills/demo/SKILL.md"]?.ecosystems, ["claude-code"]);
+    assert.deepEqual(byPath[".agents/skills/shared/SKILL.md"]?.ecosystems, ["cursor", "codex", "copilot", "gemini"]);
     assert.ok(byPath["AGENTS.md"]?.ecosystems.includes("codex"));
     assert.ok(byPath["AGENTS.md"]?.ecosystems.includes("copilot"));
   });
@@ -154,6 +163,69 @@ describe("inventory", () => {
     assert.equal(report.unresolved.length, 0);
     assert.equal(report.conflicts.length, 1);
     assert.equal(report.conflicts[0]?.effective?.layer, "project");
+  });
+
+  it("inventories plugin rules, plugin skills, and user-home skills", () => {
+    const home = tempDir("precedent-home-");
+    const root = tempDir("precedent-root-");
+    write(
+      root,
+      ".cursor/plugins/ship/rules/always.mdc",
+      "---\nalwaysApply: true\n---\nBind HTTP servers to 0.0.0.0.\n",
+    );
+    write(
+      root,
+      ".cursor/plugins/ship/rules/requestable.mdc",
+      "---\ndescription: Use when deploying to ship\n---\nShip deploy notes.\n",
+    );
+    write(root, ".cursor/plugins/ship/skills/deploy/SKILL.md", "---\nname: deploy\ndescription: Deploy the app\n---\nDeploy skill.\n");
+    write(root, "pack/.cursor-plugin/plugin.json", "{\"name\":\"pack\"}\n");
+    write(root, "pack/rules/always.mdc", "---\nalwaysApply: true\n---\nPack always-on plugin rule.\n");
+    write(home, ".cursor/skills/personal/SKILL.md", "Personal cursor skill.");
+    write(home, ".cursor/skills-cursor/builtin/SKILL.md", "Built-in skill must be ignored.");
+    write(
+      home,
+      ".cursor/plugins/local/acme/rules/local-always.mdc",
+      "---\nalwaysApply: true\n---\nLocal plugin always-on rule.\n",
+    );
+    write(
+      home,
+      ".cursor/plugins/cache/marketplace/rules/cache-always.mdc",
+      "---\nalwaysApply: true\n---\nCache plugin must not be inventoried.\n",
+    );
+    write(root, "README.md", "empty\n");
+
+    const sources = collectInventory({
+      root,
+      home,
+      includeUserRules: true,
+      includeAncestors: false,
+      extraRules: [],
+    }).sources;
+    const byPath = Object.fromEntries(sources.map((source) => [source.path, source]));
+
+    assert.equal(byPath[".cursor/plugins/ship/rules/always.mdc"]?.kind, "plugin-rule");
+    assert.equal(byPath[".cursor/plugins/ship/rules/always.mdc"]?.activation, "always");
+    assert.equal(byPath[".cursor/plugins/ship/rules/always.mdc"]?.layer, "project");
+    assert.ok(byPath[".cursor/plugins/ship/rules/always.mdc"]?.body?.includes("Bind HTTP servers"));
+    assert.equal(byPath[".cursor/plugins/ship/rules/requestable.mdc"]?.activation, "intelligent");
+    assert.equal(byPath[".cursor/plugins/ship/skills/deploy/SKILL.md"]?.kind, "skill");
+    assert.equal(byPath[".cursor/plugins/ship/skills/deploy/SKILL.md"]?.activation, "intelligent");
+    assert.equal(byPath["pack/rules/always.mdc"]?.kind, "plugin-rule");
+    assert.equal(kindFor(join(root, "pack/rules/always.mdc")), "plugin-rule");
+    assert.equal(kindFor(join(root, ".cursor/plugins/ship/rules/always.mdc")), "plugin-rule");
+    assert.equal(byPath["pack/rules/always.mdc"]?.activation, "always");
+    const personal = sources.find((source) => source.path.endsWith("skills/personal/SKILL.md") || source.path.endsWith("skills\\personal\\SKILL.md"));
+    assert.ok(personal);
+    assert.equal(personal.layer, "user");
+    assert.equal(personal.kind, "skill");
+    const localPlugin = sources.find((source) => source.path.includes("local-always.mdc"));
+    assert.ok(localPlugin);
+    assert.equal(localPlugin.kind, "plugin-rule");
+    assert.equal(localPlugin.layer, "user");
+    assert.equal(localPlugin.activation, "always");
+    assert.equal(sources.some((source) => source.path.includes("skills-cursor")), false);
+    assert.equal(sources.some((source) => source.path.includes("cache-always.mdc")), false);
   });
 
   it("does not treat a symlink as a second authority in the compile", () => {

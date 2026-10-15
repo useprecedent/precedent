@@ -1,7 +1,14 @@
 import { lstatSync, readFileSync, readlinkSync, readdirSync, realpathSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
-import { CONFIG_DIR_NAMES, DOCUMENT_NAMES, ecosystemsFor, kindFor as kindFromPath } from "./ecosystems.ts";
+import {
+  CONFIG_DIR_NAMES,
+  DOCUMENT_NAMES,
+  ecosystemsFor,
+  isCursorPluginRulePath,
+  isRuleFileName,
+  kindFor as kindFromPath,
+} from "./ecosystems.ts";
 import { redact } from "./redact.ts";
 import type { ExtraRule, Inventory, Kind, Source } from "./types.ts";
 
@@ -29,6 +36,7 @@ export const MISSING_FROM_DISK = [
   "user rules stored in Cursor settings",
   "Copilot personal and organization instructions (GitHub UI)",
   "Claude Code managed settings",
+  "Cursor marketplace plugins (enabled set is not on disk)",
 ];
 
 export function collectInventory(options: {
@@ -113,6 +121,7 @@ function walkInstructionFiles(root: string): string[] {
       if (entry.name.endsWith(".instructions.md") && isUnderDir(dir, ".github", "instructions")) found.push(abs);
       if (entry.name.endsWith(".mdc") && isUnderDir(dir, ".cursor", "rules")) found.push(abs);
       if (entry.name.endsWith(".md") && isUnderDir(dir, ".claude", "rules")) found.push(abs);
+      if (isRuleFileName(entry.name) && basename(dir) === "rules" && isPluginRulesDir(dir)) found.push(abs);
       if (entry.name === "SKILL.md" && parentNamed(dir, "skills")) found.push(abs);
       if (entry.name.endsWith(".md") && isUnderDir(dir, ".claude", "commands")) found.push(abs);
     }
@@ -136,7 +145,39 @@ function walkUserInstructionFiles(home: string): string[] {
   if (isFile(copilot)) found.push(copilot);
   const copilotInstructions = join(home, ".copilot", "instructions");
   if (isDir(copilotInstructions)) found.push(...walkBySuffix(copilotInstructions, ".instructions.md"));
+  for (const rel of [
+    join(".cursor", "skills"),
+    join(".claude", "skills"),
+    join(".agents", "skills"),
+    join(".copilot", "skills"),
+    join(".gemini", "skills"),
+  ])
+    found.push(...walkSkillFiles(join(home, rel)));
+  found.push(...walkLocalPluginFiles(join(home, ".cursor", "plugins", "local")));
   return found;
+}
+
+function walkSkillFiles(dir: string): string[] {
+  if (!isDir(dir)) return [];
+  return walkFiles(dir).filter((path) => basename(path) === "SKILL.md" && !skipped(path) && !pathIncludes(path, "skills-cursor"));
+}
+
+function walkLocalPluginFiles(dir: string): string[] {
+  if (!isDir(dir)) return [];
+  return walkFiles(dir).filter((path) => {
+    if (skipped(path)) return false;
+    if (basename(path) === "SKILL.md") return true;
+    return isCursorPluginRulePath(path);
+  });
+}
+
+function pathIncludes(path: string, part: string): boolean {
+  return path.split(sep).includes(part);
+}
+
+function isPluginRulesDir(dir: string): boolean {
+  if (isUnderDir(dir, ".cursor", "plugins")) return true;
+  return isDir(join(dirname(dir), ".cursor-plugin"));
 }
 
 function walkByExt(dir: string, ext: string): string[] {
@@ -291,7 +332,12 @@ function parseFrontmatter(block: string): Frontmatter {
 }
 
 function classify(meta: Frontmatter, kind: Kind): { activation: Source["activation"]; globs: string[] } {
-  if (kind === "skill") return { activation: "manual", globs: [] };
+  if (kind === "skill") {
+    if (meta["disable-model-invocation"] === true) return { activation: "manual", globs: [] };
+    if (typeof meta.description === "string" && meta.description.trim())
+      return { activation: "intelligent", globs: [] };
+    return { activation: "manual", globs: [] };
+  }
   if (kind === "copilot-path-instructions") {
     const globs = normalizeGlobs(meta.applyTo ?? meta.globs);
     return { activation: "glob", globs };
