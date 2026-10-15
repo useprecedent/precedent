@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, it } from "node:test";
+import { kindFor } from "../src/ecosystems.ts";
 import { compile } from "../src/compile.ts";
 import { collectInventory } from "../src/inventory.ts";
 import { link, options, tempDir, write } from "./helpers.ts";
@@ -205,6 +206,8 @@ describe("inventory", () => {
     assert.equal(byPath[".cursor/plugins/ship/skills/deploy/SKILL.md"]?.kind, "skill");
     assert.equal(byPath[".cursor/plugins/ship/skills/deploy/SKILL.md"]?.activation, "intelligent");
     assert.equal(byPath["pack/rules/always.mdc"]?.kind, "plugin-rule");
+    assert.equal(kindFor(join(root, "pack/rules/always.mdc")), "plugin-rule");
+    assert.equal(kindFor(join(root, ".cursor/plugins/ship/rules/always.mdc")), "plugin-rule");
     assert.equal(byPath["pack/rules/always.mdc"]?.activation, "always");
     const personal = sources.find((source) => source.path.endsWith("skills/personal/SKILL.md") || source.path.endsWith("skills\\personal\\SKILL.md"));
     assert.ok(personal);

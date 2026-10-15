@@ -232,7 +232,7 @@ function layerForPath(path: string): Source["layer"] {
 }
 
 function sourceRecord(path: string, root: string, layer: Source["layer"]): Source {
-  const kind = kindForSource(path);
+  const kind = kindFromPath(path);
   const text = readText(path);
   const { meta, body } = text === null ? { meta: {} as Frontmatter, body: "" } : splitFrontmatter(text);
   const { activation, globs } = classify(meta, kind);
@@ -329,19 +329,6 @@ function parseFrontmatter(block: string): Frontmatter {
     index += 1;
   }
   return parsed;
-}
-
-function kindForSource(path: string): Kind {
-  const kind = kindFromPath(path);
-  if (kind === "plugin-rule") return kind;
-  if (isPluginPackRule(path)) return "plugin-rule";
-  return kind;
-}
-
-function isPluginPackRule(path: string): boolean {
-  const dir = dirname(path);
-  if (basename(dir) !== "rules" || !isRuleFileName(basename(path))) return false;
-  return isDir(join(dirname(dir), ".cursor-plugin"));
 }
 
 function classify(meta: Frontmatter, kind: Kind): { activation: Source["activation"]; globs: string[] } {

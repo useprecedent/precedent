@@ -1,4 +1,5 @@
-import { basename, dirname } from "node:path";
+import { statSync } from "node:fs";
+import { basename, dirname, join } from "node:path";
 import type { Ecosystem, Kind, Source } from "./types.ts";
 
 export const DOCUMENT_NAMES = new Set([
@@ -30,6 +31,16 @@ export function isCursorPluginRulePath(path: string): boolean {
   return segments.some((segment, index) => segment === ".cursor" && segments[index + 1] === "plugins");
 }
 
+export function isPluginPackRule(path: string): boolean {
+  const dir = dirname(path);
+  if (basename(dir) !== "rules" || !isRuleFileName(basename(path))) return false;
+  try {
+    return statSync(join(dirname(dir), ".cursor-plugin")).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
 export function kindFor(path: string): Kind {
   const name = basename(path);
   const parent = basename(dirname(path));
@@ -39,7 +50,7 @@ export function kindFor(path: string): Kind {
   if (name === "GEMINI.md") return "gemini-md";
   if (name === "copilot-instructions.md") return "copilot-instructions";
   if (name.endsWith(".instructions.md")) return "copilot-path-instructions";
-  if (isCursorPluginRulePath(path)) return "plugin-rule";
+  if (isCursorPluginRulePath(path) || isPluginPackRule(path)) return "plugin-rule";
   if (name === "SKILL.md" || parent === "commands") return "skill";
   if (parent === "rules" && grand === ".claude" && name.endsWith(".md")) return "claude-rule";
   if (name.endsWith(".mdc")) return "project-rule";
