@@ -92,11 +92,11 @@ Empty delta (typical Action comment):
 
 practicelink/pl-cmp
 
-Base a1b2c3d (main) · head e4f5g6h · https://github.com/practicelink/pl-cmp/compare/a1b2c3d...e4f5g6h
+Base a1b2c3d (main) · head e4f5g6h · [compare](https://github.com/practicelink/pl-cmp/compare/a1b2c3d...e4f5g6h)
 
-Scope: always-on · 8 git sources, 4 in force · team rules and Cursor settings user rules are not in this report.
+Scope: always-on · team rules and Cursor settings user rules are not in this report.
 
-No new always-on instruction conflicts relative to main.
+No always-on conflicts in git on this head; none new relative to main.
 
 <details>
 <summary>Methodology</summary>

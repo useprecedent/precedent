@@ -33,12 +33,20 @@ describe("report contract", () => {
       {
         repository: "org/repo",
         baseRef: "main",
-        provenance: { event: "pull_request", baseRef: "main", baseSha: "1111111", headSha: "2222222" },
+        provenance: {
+          event: "pull_request",
+          baseRef: "main",
+          baseSha: "1111111",
+          headSha: "2222222",
+          compareUrl: "https://github.com/org/repo/compare/1111111...2222222",
+        },
       },
     );
     assert.match(md, /<!-- precedent-report -->/);
-    assert.match(md, /No new always-on instruction conflicts relative to main/);
-    assert.match(md, /^Scope: always-on/m);
+    assert.match(md, /No always-on conflicts in git on this head; none new relative to main/);
+    assert.match(md, /^Scope: always-on · team rules/m);
+    assert.doesNotMatch(md, /git sources/);
+    assert.match(md, /\[compare\]\(/);
     assert.doesNotMatch(md, /Compile path/);
     assert.doesNotMatch(md, /## Findings/);
     assert.doesNotMatch(md, /## Provenance/);

@@ -77,7 +77,7 @@ export function renderReport(input: ReportRenderInput): string {
       lines.push(`- Base: ${baseParts}`);
     }
     if (provenance.headSha) lines.push(`- Head: ${provenance.headSha}`);
-    if (provenance.compareUrl) lines.push(`- Compare: ${provenance.compareUrl}`);
+    if (provenance.compareUrl) lines.push(`- Compare: [compare](${provenance.compareUrl})`);
     lines.push("");
   }
 
@@ -133,8 +133,8 @@ function renderCompactEmptyPrDelta(
   lines.push("# Precedent", "", subject, "");
   const prov = formatProvenanceLine(provenance);
   if (prov) lines.push(prov, "");
-  lines.push(compactScopeLine(report), "");
-  lines.push(`No new always-on instruction conflicts relative to ${baseRef}.`, "");
+  lines.push(compactScopeLineEmpty(report), "");
+  lines.push(emptyPrDeltaFindingLine(baseRef), "");
   lines.push(...methodologyBlock());
   return lines.join("\n").trim() + "\n";
 }
@@ -149,13 +149,16 @@ function formatProvenanceLine(provenance: ReportProvenance | null): string {
     parts.push(`Base ${base}`);
   }
   if (provenance.headSha) parts.push(`head ${provenance.headSha}`);
-  if (provenance.compareUrl) parts.push(provenance.compareUrl);
+  if (provenance.compareUrl) parts.push(`[compare](${provenance.compareUrl})`);
   return parts.join(" · ");
 }
 
-function compactScopeLine(report: Report): string {
-  const excluded = outOfReportSentence(report);
-  return `Scope: always-on · ${report.sources.length} git sources, ${report.inForce.length} in force · ${excluded}`;
+function emptyPrDeltaFindingLine(baseRef: string): string {
+  return `No always-on conflicts in git on this head; none new relative to ${baseRef}.`;
+}
+
+function compactScopeLineEmpty(report: Report): string {
+  return `Scope: always-on · ${outOfReportSentence(report)}`;
 }
 
 function outOfReportSentence(report: Report): string {
