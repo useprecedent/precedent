@@ -1,7 +1,7 @@
 {
   "name": "@useprecedent/precedent",
   "version": "0.1.4",
-  "description": "Compile Cursor AGENTS.md, CLAUDE.md, and .cursor/rules; report always-on conflicts. CLI, GitHub Action, and Cursor skill.",
+  "description": "Compile AGENTS.md, CLAUDE.md, Copilot instructions, and editor rules; report always-on conflicts. CLI, GitHub Action, and Cursor skill.",
   "author": "Precedent",
   "type": "module",
   "license": "Apache-2.0",
@@ -24,9 +24,12 @@
     "dist",
     "src",
     "scripts",
+    "brand",
     "SKILL.md",
     "LICENSE",
     "README.md",
+    "SECURITY.md",
+    "CHANGELOG.md",
     "docs",
     "action.yml"
   ],
@@ -35,6 +38,9 @@
   },
   "keywords": [
     "cursor",
+    "claude-code",
+    "codex",
+    "copilot",
     "agents.md",
     "claude.md",
     "rules",

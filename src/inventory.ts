@@ -1,6 +1,7 @@
 import { lstatSync, readFileSync, readlinkSync, readdirSync, realpathSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
+import { CONFIG_DIR_NAMES, DOCUMENT_NAMES, ecosystemsFor, kindFor as kindFromPath } from "./ecosystems.ts";
 import { redact } from "./redact.ts";
 import type { ExtraRule, Inventory, Kind, Source } from "./types.ts";
 
@@ -20,9 +21,15 @@ export const SKIP_DIRS = new Set([
 
 const BODY_LIMIT = 30_000;
 const FILE_LIMIT = 200_000;
-const DOCUMENT_NAMES = new Set(["AGENTS.md", "CLAUDE.md"]);
 
 type Frontmatter = Record<string, unknown>;
+
+export const MISSING_FROM_DISK = [
+  "team rules",
+  "user rules stored in Cursor settings",
+  "Copilot personal and organization instructions (GitHub UI)",
+  "Claude Code managed settings",
+];
 
 export function collectInventory(options: {
   root: string;
@@ -36,7 +43,7 @@ export function collectInventory(options: {
   const records = new Map<string, Source>();
 
   for (const path of walkInstructionFiles(root))
-    records.set(location(path), sourceRecord(path, root, "project"));
+    records.set(location(path), sourceRecord(path, root, layerForPath(path)));
 
   if (options.includeAncestors)
     for (const directory of ancestorDirs(root, home))
@@ -48,34 +55,37 @@ export function collectInventory(options: {
       }
 
   if (options.includeUserRules) {
-    const userRules = join(home, ".cursor", "rules");
-    if (isDir(userRules))
-      for (const path of walkMdc(userRules)) {
-        const placed = location(path);
-        if (records.has(placed) || skipped(path)) continue;
-        records.set(placed, { ...sourceRecord(path, root, "user"), kind: "user-rule", layer: "user" });
-      }
+    for (const path of walkUserInstructionFiles(home)) {
+      const placed = location(path);
+      if (records.has(placed) || skipped(path)) continue;
+      const record = sourceRecord(path, root, "user");
+      if (path.includes(`${sep}.cursor${sep}rules${sep}`) || path.endsWith(`${sep}.cursor${sep}rules`))
+        records.set(placed, { ...record, kind: "user-rule", layer: "user", ecosystems: ["cursor"] });
+      else records.set(placed, record);
+    }
   }
 
   for (const [index, extra] of options.extraRules.entries()) {
     const path = extra.layer === "team" ? `cursor://team/${index + 1}` : `cursor://user/${index + 1}`;
+    const kind = extra.layer === "team" ? "team-rule" : "user-rule";
     records.set(path, {
       path: extra.title,
-      kind: extra.layer === "team" ? "team-rule" : "user-rule",
+      kind,
       layer: extra.layer,
+      ecosystems: ["cursor"],
       activation: "always",
       specificity: 0,
       appliesUnder: null,
       description: extra.title,
       globs: [],
-      body: extra.text,
+      body: redact(extra.text),
     });
   }
 
   return {
     root,
     sources: [...records.values()].sort(sortSources),
-    missingFromDisk: ["team rules", "user rules stored in Cursor settings"],
+    missingFromDisk: [...MISSING_FROM_DISK],
   };
 }
 
@@ -91,6 +101,7 @@ function walkInstructionFiles(root: string): string[] {
     } catch {
       continue;
     }
+    const dirName = basename(dir);
     for (const entry of entries) {
       const abs = join(dir, entry.name);
       if (entry.isDirectory()) {
@@ -98,14 +109,45 @@ function walkInstructionFiles(root: string): string[] {
         continue;
       }
       if (DOCUMENT_NAMES.has(entry.name)) found.push(abs);
+      if (entry.name === "copilot-instructions.md" && dirName === ".github") found.push(abs);
+      if (entry.name.endsWith(".instructions.md") && isUnderDir(dir, ".github", "instructions")) found.push(abs);
+      if (entry.name.endsWith(".mdc") && isUnderDir(dir, ".cursor", "rules")) found.push(abs);
+      if (entry.name.endsWith(".md") && isUnderDir(dir, ".claude", "rules")) found.push(abs);
+      if (entry.name === "SKILL.md" && parentNamed(dir, "skills")) found.push(abs);
+      if (entry.name.endsWith(".md") && isUnderDir(dir, ".claude", "commands")) found.push(abs);
     }
   }
-  const rules = join(root, ".cursor", "rules");
-  if (isDir(rules)) found.push(...walkMdc(rules).filter((path) => !skipped(path)));
   return found;
 }
 
-function walkMdc(dir: string): string[] {
+function walkUserInstructionFiles(home: string): string[] {
+  const found: string[] = [];
+  const cursorRules = join(home, ".cursor", "rules");
+  if (isDir(cursorRules)) found.push(...walkByExt(cursorRules, ".mdc"));
+  const claudeMd = join(home, ".claude", "CLAUDE.md");
+  if (isFile(claudeMd)) found.push(claudeMd);
+  const claudeRules = join(home, ".claude", "rules");
+  if (isDir(claudeRules)) found.push(...walkByExt(claudeRules, ".md"));
+  for (const name of ["AGENTS.md", "AGENTS.override.md"]) {
+    const path = join(home, ".codex", name);
+    if (isFile(path)) found.push(path);
+  }
+  const copilot = join(home, ".copilot", "copilot-instructions.md");
+  if (isFile(copilot)) found.push(copilot);
+  const copilotInstructions = join(home, ".copilot", "instructions");
+  if (isDir(copilotInstructions)) found.push(...walkBySuffix(copilotInstructions, ".instructions.md"));
+  return found;
+}
+
+function walkByExt(dir: string, ext: string): string[] {
+  return walkFiles(dir).filter((path) => path.endsWith(ext) && !skipped(path));
+}
+
+function walkBySuffix(dir: string, suffix: string): string[] {
+  return walkFiles(dir).filter((path) => path.endsWith(suffix) && !skipped(path));
+}
+
+function walkFiles(dir: string): string[] {
   const found: string[] = [];
   const stack = [dir];
   while (stack.length > 0) {
@@ -123,7 +165,7 @@ function walkMdc(dir: string): string[] {
         if (!SKIP_DIRS.has(entry.name)) stack.push(abs);
         continue;
       }
-      if (entry.name.endsWith(".mdc")) found.push(abs);
+      found.push(abs);
     }
   }
   return found.sort();
@@ -144,8 +186,12 @@ function skipped(path: string): boolean {
   return path.split(sep).some((part) => SKIP_DIRS.has(part));
 }
 
+function layerForPath(path: string): Source["layer"] {
+  return basename(path) === "CLAUDE.local.md" ? "user" : "project";
+}
+
 function sourceRecord(path: string, root: string, layer: Source["layer"]): Source {
-  const kind = kindFor(path);
+  const kind = kindFromPath(path);
   const text = readText(path);
   const { meta, body } = text === null ? { meta: {} as Frontmatter, body: "" } : splitFrontmatter(text);
   const { activation, globs } = classify(meta, kind);
@@ -154,6 +200,7 @@ function sourceRecord(path: string, root: string, layer: Source["layer"]): Sourc
     path: displayPath(path, root),
     kind,
     layer,
+    ecosystems: ecosystemsFor(kind, path),
     activation,
     specificity: specificityFor(path, root, kind),
     appliesUnder: appliesUnder(path, root, kind),
@@ -173,13 +220,6 @@ function sourceRecord(path: string, root: string, layer: Source["layer"]): Sourc
   }
   record.body = redact(body);
   return record;
-}
-
-function kindFor(path: string): Kind {
-  const name = basename(path);
-  if (name === "AGENTS.md") return "agents-md";
-  if (name === "CLAUDE.md") return "claude-md";
-  return "project-rule";
 }
 
 function readText(path: string): string | null {
@@ -251,7 +291,18 @@ function parseFrontmatter(block: string): Frontmatter {
 }
 
 function classify(meta: Frontmatter, kind: Kind): { activation: Source["activation"]; globs: string[] } {
-  if (kind === "agents-md" || kind === "claude-md") return { activation: "always", globs: [] };
+  if (kind === "skill") return { activation: "manual", globs: [] };
+  if (kind === "copilot-path-instructions") {
+    const globs = normalizeGlobs(meta.applyTo ?? meta.globs);
+    return { activation: "glob", globs };
+  }
+  if (kind === "claude-rule") {
+    const globs = normalizeGlobs(meta.paths ?? meta.globs);
+    if (globs.length > 0) return { activation: "glob", globs };
+    return { activation: "always", globs: [] };
+  }
+  if (kind === "agents-md" || kind === "claude-md" || kind === "gemini-md" || kind === "copilot-instructions")
+    return { activation: "always", globs: [] };
   const globs = normalizeGlobs(meta.globs);
   if (meta.alwaysApply === true) return { activation: "always", globs };
   if (globs.length > 0) return { activation: "glob", globs };
@@ -301,20 +352,30 @@ function realpath(path: string): string {
 }
 
 function specificityFor(path: string, root: string, kind: Kind): number {
-  if (kind !== "agents-md" && kind !== "claude-md") return 0;
-  const parent = dirname(location(path));
-  const rel = relative(root, parent);
+  if (!isScopedDocument(kind)) return 0;
+  const scope = scopeParent(path);
+  const rel = relative(root, scope);
   if (rel === "" || (!rel.startsWith("..") && !rel.startsWith(sep)))
     return rel === "" ? 0 : rel.split(sep).filter(Boolean).length;
-  return -relative(parent, root).split(sep).filter(Boolean).length;
+  return -relative(scope, root).split(sep).filter(Boolean).length;
 }
 
 function appliesUnder(path: string, root: string, kind: Kind): string | null {
-  if (kind !== "agents-md" && kind !== "claude-md") return null;
-  const parent = dirname(location(path));
-  const rel = relative(root, parent);
+  if (!isScopedDocument(kind)) return null;
+  const scope = scopeParent(path);
+  const rel = relative(root, scope);
   if (rel.startsWith("..") || rel.startsWith(sep)) return null;
   return rel === "" ? null : rel.split(sep).join("/");
+}
+
+function isScopedDocument(kind: Kind): boolean {
+  return kind === "agents-md" || kind === "claude-md" || kind === "gemini-md" || kind === "copilot-instructions";
+}
+
+function scopeParent(path: string): string {
+  const parent = dirname(location(path));
+  if (CONFIG_DIR_NAMES.has(basename(parent))) return dirname(parent);
+  return parent;
 }
 
 function displayPath(path: string, root: string): string {
@@ -353,6 +414,18 @@ function isSymlink(path: string): boolean {
   } catch {
     return false;
   }
+}
+
+function isUnderDir(dir: string, ...parts: string[]): boolean {
+  const segments = dir.split(sep);
+  for (let index = 0; index <= segments.length - parts.length; index += 1) {
+    if (parts.every((part, offset) => segments[index + offset] === part)) return true;
+  }
+  return false;
+}
+
+function parentNamed(dir: string, name: string): boolean {
+  return basename(dirname(dir)) === name || basename(dir) === name;
 }
 
 export function defaultHome(): string {

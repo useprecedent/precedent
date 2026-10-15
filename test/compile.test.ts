@@ -30,6 +30,20 @@ describe("compile + report", () => {
     assert.match(text, /\[REDACTED\]/);
   });
 
+  it("redacts secrets in extra-rules bodies", () => {
+    const root = tempDir();
+    write(root, "README.md", "ok\n");
+    const report = compile({
+      ...options(root),
+      extraRules: [
+        { layer: "user", title: "settings", text: "Never commit api_key=sk-super-secret-value-123456.\n" },
+      ],
+    });
+    const extra = report.sources.find((source) => source.kind === "user-rule");
+    assert.equal(extra?.body?.includes("sk-super-secret-value-123456"), false);
+    assert.match(extra?.body ?? "", /\[REDACTED\]/);
+  });
+
   it("diffs new unresolved findings against a baseline compile", () => {
     const base = tempDir("precedent-base-");
     write(base, "AGENTS.md", "The agent runs terminal commands.\n");

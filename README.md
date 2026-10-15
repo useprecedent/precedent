@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="brand/logo.png" alt="Precedent" width="360" />
+  <img src="brand/mark.svg" alt="Precedent" width="64" height="64" />
 </p>
 
 # Precedent
 
-Compile Cursor instruction files for a repository path, apply documented precedence, and report always-on semantic conflicts. Output is Markdown (human/PR) or JSON (automation).
+Compile instruction files for a repository path (Cursor, Claude Code, Codex, Copilot, Gemini), apply documented precedence, and report always-on semantic conflicts. Output is Markdown (human/PR) or JSON (automation).
 
-The compiler does not guarantee model compliance. It records which statements should win and surfaces unresolved cases when Cursor’s docs do not define an order.
+The compiler does not guarantee model compliance. It records which statements should win and surfaces unresolved cases when a vendor has not defined an order.
 
 ## Components
 
@@ -22,7 +22,7 @@ The compiler does not guarantee model compliance. It records which statements sh
 | --- | --- |
 | Effective policy and conflicts while coding in Cursor (including team rules and settings-only user rules from chat) | [Cursor skill](#install-the-cursor-skill) |
 | Scripts, local checks, or JSON for other tools | [CLI](#install-cli) |
-| PR comments when `AGENTS.md`, `CLAUDE.md`, or `.cursor/rules` change in git | [GitHub Action](#github-action) |
+| PR comments when instruction files change in git | [GitHub Action](#github-action) |
 
 **Measured:** file inventory, activation mode, symlinks, documented layer/specificity.
 
@@ -82,16 +82,20 @@ The skill uses sections **Conflicts**, **Unresolved**, and **Left out**. CLI and
 
 **On disk (default compile):**
 
-- `AGENTS.md` / `CLAUDE.md` (repo root, nested paths, optional ancestors with `--no-ancestors` off)
+- `AGENTS.md` / `AGENTS.override.md` / `CLAUDE.md` / `CLAUDE.local.md` / `GEMINI.md` (repo root, nested paths, optional ancestors with `--no-ancestors` off)
 - `.cursor/rules/*.mdc` — classified as always / glob / intelligent / manual
-- `~/.cursor/rules` when `--user-rules` is enabled (default for local CLI; off in the Action)
+- `.claude/CLAUDE.md` and `.claude/rules/*.md` (Claude Code; `paths` frontmatter is glob)
+- `.github/copilot-instructions.md` and `.github/instructions/**/*.instructions.md` (Copilot; `applyTo` is glob)
+- `.cursor/skills/**/SKILL.md` and `.claude/skills/**/SKILL.md` — inventoried, not merged in v1
+- User-home files when `--user-rules` is enabled (default for local CLI; off in the Action): `~/.cursor/rules`, `~/.claude/`, `~/.codex/`, `~/.copilot/`
 
-Symlinks are recorded with `aliasOf` so duplicate paths are not separate authorities.
+Symlinks are recorded with `aliasOf` so duplicate paths are not separate authorities. Living merge order: [docs/precedence.md](docs/precedence.md).
 
 **Not on disk:**
 
-- Cursor team rules
-- User rules stored only in Cursor settings
+- Cursor team rules and settings-only user rules
+- Copilot personal and organization instructions (GitHub UI)
+- Claude Code managed settings
 
 Pass chat-only rules without faking paths:
 
@@ -103,10 +107,11 @@ npx @useprecedent/precedent --root . --extra-rules extra-rules.json
 
 ## Precedence (v1, always-on)
 
-1. Team over project over user
-2. Among `AGENTS.md` / `CLAUDE.md`, higher specificity wins in the same chain; nested files apply only under `appliesUnder`
-3. Always-on `.mdc` rules and covering `AGENTS.md` / `CLAUDE.md` in the same directory are one layer — conflicts there are **unresolved**
-4. Glob, intelligent, and manual rules are excluded from the merge in v1
+1. Team over project over user (Cursor layers; extra-rules from chat)
+2. Among document files (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, repo-wide Copilot instructions), higher specificity wins in the same chain; nested files apply only under `appliesUnder`. `.claude/` and `.github/` config directories count as the project root, not as nested app paths
+3. Always-on project rules and covering documents in the same directory are one layer — conflicts there are **unresolved**, including Cursor `.mdc` vs `AGENTS.md` and Copilot instructions vs `AGENTS.md`
+4. Glob, intelligent, manual, path-scoped Copilot/Claude rules, and skills are excluded from the merge in v1
+5. `--ecosystem all` (default) compiles every inventoried always-on file. `--ecosystem cursor|claude-code|codex|copilot|gemini` leaves other ecosystems out of the merge
 
 ## CLI flags
 
@@ -118,13 +123,14 @@ npx @useprecedent/precedent --root . --extra-rules extra-rules.json
 | `--inventory` | Emit inventory JSON only |
 | `--json` | Full report JSON |
 | `--extra-rules <file>` | Team/user rules from session |
-| `--no-user-rules` | Skip `~/.cursor/rules` |
-| `--no-ancestors` | Skip ancestor `AGENTS.md` / `CLAUDE.md` |
+| `--ecosystem` | `all` (default) or one of `cursor`, `claude-code`, `codex`, `copilot`, `gemini` |
+| `--no-user-rules` | Skip user-home instruction files |
+| `--no-ancestors` | Skip ancestor instruction documents |
 | `--fail-on-unresolved` | Exit 1 if unresolved always-on conflicts exist |
 
 ## Report format
 
-CLI and Action share one Markdown schema. Empty PR deltas use a short note; PRs with new conflicts include full scope sections and numbered findings.
+CLI and Action share one Markdown schema ([docs/report-contract.md](docs/report-contract.md)). Empty PR deltas use a short note; PRs with new conflicts include full scope sections and numbered findings. Changing the schema is a major version.
 
 Empty delta (typical Action comment):
 
@@ -157,7 +163,7 @@ New conflict on a PR (abbreviated):
 
 ## GitHub Action
 
-Comment-only by default. Pin a release tag (see [releases](https://github.com/useprecedent/precedent/releases)).
+Comment-only by default. Pin the release SHA (tag `v1.2` is the moving pointer for that line).
 
 ```yaml
 name: Precedent
@@ -166,9 +172,15 @@ on:
     paths:
       - "AGENTS.md"
       - "CLAUDE.md"
+      - "GEMINI.md"
       - "**/AGENTS.md"
       - "**/CLAUDE.md"
+      - "**/GEMINI.md"
+      - "**/AGENTS.override.md"
       - ".cursor/rules/**"
+      - ".claude/**"
+      - ".github/copilot-instructions.md"
+      - ".github/instructions/**"
 jobs:
   compile:
     runs-on: ubuntu-latest
@@ -179,7 +191,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: useprecedent/precedent@v1.2
+      - uses: useprecedent/precedent@d25e13e2a2ac15596d79208d4e7cbc8820943344 # v1.2
         with:
           fail-on-unresolved: false
 ```
@@ -189,12 +201,21 @@ The Action compiles from git only. Team rules and Cursor settings user rules are
 ## Limits
 
 - No proof that the model followed the effective policy
-- Glob / intelligent / manual activation and plugin skills are not merged in v1
+- Glob / intelligent / manual activation, path-scoped Copilot/Claude rules, and plugin skills are not merged in v1
 - Semantic v1 is a local heuristic (no API calls in the default compile path)
+- Copilot organization instructions and Cursor team rules are out of git compiles unless passed as `--extra-rules`
 
 ## Runtime
 
 Compile and inventory run on the host running the CLI or Action. The default Action does not send repository content to a third-party Precedent service.
+
+## Security
+
+See [SECURITY.md](SECURITY.md). Report vulnerabilities through GitHub private advisory reporting.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
