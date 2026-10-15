@@ -41,7 +41,8 @@ export function ecosystemsFor(kind: Kind, path = ""): Ecosystem[] {
     return ["cursor"];
   }
   if (kind === "agents-md") return ["cursor", "codex", "copilot", "claude-code"];
-  if (kind === "claude-md" || kind === "claude-rule") return ["claude-code", "copilot"];
+  if (kind === "claude-md") return ["cursor", "claude-code", "copilot"];
+  if (kind === "claude-rule") return ["claude-code", "copilot"];
   if (kind === "gemini-md") return ["gemini", "copilot"];
   if (kind === "copilot-instructions" || kind === "copilot-path-instructions") return ["copilot"];
   if (kind === "skill") {

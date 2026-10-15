@@ -70,6 +70,16 @@ describe("precedence", () => {
     assert.ok(cursor.leftOut.some((item) => item.path.includes(".codex")));
   });
 
+  it("keeps CLAUDE.md in a cursor compile and leaves Claude rules out", () => {
+    const root = tempDir();
+    write(root, "CLAUDE.md", "Cursor covering document.");
+    write(root, ".claude/rules/always.md", "Claude-only always-on rule.");
+
+    const cursor = compile({ ...options(root), ecosystem: "cursor" });
+    assert.ok(cursor.inForce.some((item) => item.path === "CLAUDE.md"));
+    assert.ok(cursor.leftOut.some((item) => item.path === ".claude/rules/always.md"));
+  });
+
   it("keeps nested AGENTS.md out when compiling a path outside appliesUnder", () => {
     const root = tempDir();
     write(root, "AGENTS.md", "Root agents file.");

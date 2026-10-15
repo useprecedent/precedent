@@ -231,7 +231,9 @@ def ecosystems_for(kind: str, path: Path | None = None) -> list[str]:
         return ["cursor"]
     if kind == "agents-md":
         return ["cursor", "codex", "copilot", "claude-code"]
-    if kind in {"claude-md", "claude-rule"}:
+    if kind == "claude-md":
+        return ["cursor", "claude-code", "copilot"]
+    if kind == "claude-rule":
         return ["claude-code", "copilot"]
     if kind == "gemini-md":
         return ["gemini", "copilot"]
