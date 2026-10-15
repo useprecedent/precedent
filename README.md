@@ -32,7 +32,7 @@ The compiler does not guarantee model compliance. It records which statements sh
 | Scripts, CI, or no skill | — | [CLI](#install-cli) (default `--ecosystem all`) |
 | PR comments when instruction files change | — | [GitHub Action](#github-action) |
 
-Drop `-g` to install for this repository only. The skill ships in this repo and in the npm package; it is not registered in your agent until you install it.
+Drop `-g` to install for this repository only. Without `-g`, the skills CLI writes Claude Code to `.claude/skills/precedent/` and Cursor, Codex, Copilot, and Gemini CLI to `.agents/skills/precedent/`. The skill ships in this repo and in the npm package; it is not registered in your agent until you install it.
 
 The skills CLI `-a` name and Precedent `--ecosystem` name are not always the same (`github-copilot` vs `copilot`, `gemini-cli` vs `gemini`).
 
