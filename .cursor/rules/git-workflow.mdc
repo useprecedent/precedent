@@ -1,0 +1,23 @@
+---
+description: Branch workflow for precedent — develop and PRs only; main is protected on GitHub.
+alwaysApply: true
+---
+
+# Git workflow (precedent repo)
+
+Treat **`main` as read-only locally**. GitHub branch protection requires pull requests and the `test` check; direct pushes to `main` are rejected.
+
+## Do
+
+- Check out **`develop`** before making changes.
+- Commit on **`develop`**.
+- Open a PR **`develop` → `main`** and merge after CI passes.
+- Use `gh pr create` when the user asks for a PR.
+
+## Do not
+
+- Commit on **`main`** for normal work. If you do, you may need `git reset --hard origin/main` after the same changes land via a merge commit on the remote.
+
+## Sync
+
+After merges on GitHub: `git checkout main && git pull origin main`, then `git checkout develop && git pull origin develop` (or merge `main` into `develop` if the team prefers).
