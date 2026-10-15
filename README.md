@@ -1,27 +1,38 @@
 # Precedent
 
-Compile the **effective Cursor instruction set** for a repo path. Report which always-on statements conflict, and cite the files.
+**Effective policy for this path.**
 
-Precedent does not guarantee the model will comply. It compiles what should win, then makes policy drift visible in PRs.
+Precedent is the company and the product. We compile the Cursor instructions in force for a repository, name which always-on statements conflict, and show that on the pull request.
 
-This repo is Apache-2.0 and is **not** part of Career Manager (`pl-cmp`).
+We do not guarantee the model will comply. We compile what should win, then make policy drift visible.
+
+Free for one person and one repo. No account. Team and Cloud come later.
+
+## Product
+
+| Surface | What it does |
+| --- | --- |
+| CLI | `npx precedent` — Markdown report, or JSON |
+| GitHub Action | Comments when a PR changes always-on policy. Optional fail-on-unresolved |
+| Skill | Same compiler, for a local Cursor session |
+
+Honest labels: **measured** is file inventory and documented precedence. **inferred** is semantic contradiction.
 
 ## Install
 
 ```bash
-npx @jakearmijo/precedent
+npx precedent
 ```
 
 ```bash
-npx @jakearmijo/precedent --root . --json
-npx @jakearmijo/precedent --root . --inventory
+npx precedent --root . --json
+npx precedent --root . --inventory
 ```
 
-Node 22+ is required for `npx`. The measured file inventory is the original Python script the skill already used — same JSON:
+Node 22+ is required for `npx`. The measured inventory is also a Python script with the same JSON:
 
 ```bash
 python3 scripts/compile_instructions.py --root .
-python3 scripts/test_compile_instructions.py
 ```
 
 ## What it sees
@@ -51,8 +62,6 @@ Contradiction detection is **inferred**. Paraphrases of the same action are not 
 
 ## Sample report
 
-A PR that adds a contradicting always-on rule next to “the agent runs terminal commands”:
-
 ```
 # Effective instructions
 
@@ -67,13 +76,9 @@ No conflicts in the always-on instructions.
 - The agent runs terminal commands. Do not ask the user to run them. (AGENTS.md:3)
 - I (the user) WILL RUN ALL TERMINAL COMMANDS YOU WILL NOT. (.cursor/rules/commands.mdc:4)
 - label: inferred contradiction; unresolved
-
-## Left out
-
-- apps/meded/CLAUDE.md — document, symlink alias of AGENTS.md; not a second authority
 ```
 
-Deleting the Action or skill restores the arbitrary pick. That is the proof it was doing work.
+Removing the Action or skill restores the arbitrary pick. That is the proof it was doing work.
 
 ## GitHub Action
 
@@ -99,10 +104,22 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: jakearmijo/precedent@v1
+      - uses: useprecedent/precedent@v1
         with:
           fail-on-unresolved: false
 ```
+
+## Company
+
+Precedent sells **effective policy**, not tokens and not model obedience.
+
+| Plan | Shape |
+| --- | --- |
+| Free | One person, one repo, no card. CLI, skill, Action |
+| Team | Flat monthly, not per seat. Org scans, CI, dashboard |
+| Enterprise | VPC, SSO, audit export, enforced golden policy |
+
+Free-tier compiles run on the machine. Nothing is sent to a Precedent server. Semantic v1 is a local heuristic.
 
 ## Skill
 
@@ -116,4 +133,4 @@ See [SKILL.md](SKILL.md). Session-start compile is noisy — keep it opt-in.
 
 ## License
 
-Apache-2.0. No content is sent to a Precedent server. Semantic v1 is a local heuristic.
+Apache-2.0. Copyright 2026 Precedent.

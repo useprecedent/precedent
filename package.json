@@ -1,9 +1,18 @@
 {
-  "name": "@jakearmijo/precedent",
+  "name": "precedent",
   "version": "0.1.0",
-  "description": "Compile the effective Cursor instruction set for a repo path and report always-on conflicts.",
+  "description": "Precedent — effective policy for this path. Compile Cursor instructions and report always-on conflicts.",
+  "author": "Precedent",
   "type": "module",
   "license": "Apache-2.0",
+  "homepage": "https://github.com/useprecedent/precedent#readme",
+  "bugs": {
+    "url": "https://github.com/useprecedent/precedent/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/useprecedent/precedent.git"
+  },
   "bin": {
     "precedent": "./bin/precedent.js"
   },
@@ -19,14 +28,6 @@
   "engines": {
     "node": ">=22"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/jakearmijo/precedent.git"
-  },
-  "bugs": {
-    "url": "https://github.com/jakearmijo/precedent/issues"
-  },
-  "homepage": "https://github.com/jakearmijo/precedent#readme",
   "keywords": [
     "cursor",
     "agents.md",

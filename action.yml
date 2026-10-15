@@ -1,6 +1,6 @@
 name: Precedent
-description: Compile Cursor instructions and comment on PRs when always-on policy conflicts
-author: Jake Armijo
+description: Precedent — comment on PRs when always-on Cursor policy conflicts
+author: Precedent
 branding:
   icon: git-pull-request
   color: purple
