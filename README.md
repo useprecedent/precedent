@@ -163,7 +163,7 @@ New conflict on a PR (abbreviated):
 
 ## GitHub Action
 
-Comment-only by default. Pin the release SHA (tag `v1.2` is the moving pointer for that line).
+Comment-only by default. Pin the release SHA (tag `v1.3` is the moving pointer for that line).
 
 ```yaml
 name: Precedent
@@ -191,7 +191,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: useprecedent/precedent@d25e13e2a2ac15596d79208d4e7cbc8820943344 # v1.2
+      - uses: useprecedent/precedent@3972603746274e8c74b4e39e733b01b207e4c657 # v1.3
         with:
           fail-on-unresolved: false
 ```

@@ -4,6 +4,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## Unreleased
 
+### Changed
+
+- README Action example pins `v1.3` (`3972603`).
+
 ## 0.1.5 - 2026-10-15
 
 ### Added
