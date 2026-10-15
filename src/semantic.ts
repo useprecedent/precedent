@@ -97,17 +97,17 @@ const TOPICS: Topic[] = [
         id: "forbid",
         label: "do not force-push to main",
         patterns: [
-          /\bnever force-push to main\b/i,
-          /\bdo not force-push.*main\b/i,
-          /\bwarn if asked\b.{0,40}\bforce-push\b/i,
+          /\bnever force[- ]push to main\b/i,
+          /\bdo not force[- ]push.*main\b/i,
+          /\bwarn if asked\b.{0,40}\bforce[- ]push\b/i,
         ],
       },
       {
         id: "allow",
         label: "force-push when requested",
         patterns: [
-          /\bforce-push.*unless the user asks\b/i,
-          /\ballow force-push when\b/i,
+          /\bforce[- ]push.*unless the user asks\b/i,
+          /\ballow force[- ]push when\b/i,
         ],
       },
     ],

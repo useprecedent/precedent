@@ -90,4 +90,18 @@ describe("semantic v1", () => {
     assert.equal(report.unresolved.length, 1);
     assert.equal(report.unresolved[0]?.behavior, "force-push to protected branches");
   });
+
+  it("finds a force push clash when the wording uses a space", () => {
+    const root = tempDir();
+    write(root, "AGENTS.md", "Never force push to main.\n");
+    write(
+      root,
+      ".cursor/rules/push.mdc",
+      "---\nalwaysApply: true\n---\n\nAllow force push when the user requests it.\n",
+    );
+
+    const report = compile(options(root));
+    assert.equal(report.unresolved.length, 1);
+    assert.equal(report.unresolved[0]?.behavior, "force-push to protected branches");
+  });
 });
