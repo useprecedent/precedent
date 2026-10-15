@@ -1,94 +1,192 @@
+import { basename } from "node:path";
 import type { Conflict, Report } from "./types.ts";
 
-export function renderMarkdown(report: Report): string {
-  const sections = [
-    "# Effective instructions",
-    "",
-    renderConflicts(report.conflicts),
-    renderUnresolved(report.unresolved),
-    renderLeftOut(report),
-    "",
-    "_measured: file inventory and documented precedence. inferred: semantic contradiction._",
-  ];
-  return sections.filter((section) => section !== null).join("\n").trim() + "\n";
+export type ReportProvenance = {
+  event: string;
+  baseRef?: string;
+  baseSha?: string;
+  headSha?: string;
+  compareUrl?: string;
+};
+
+export type ReportRenderInput = {
+  report: Report;
+  subject: string;
+  compilePath?: string;
+  mode: "full" | "pr_delta";
+  baseRef?: string;
+  provenance?: ReportProvenance | null;
+  delta?: {
+    conflicts: Conflict[];
+    unresolved: Conflict[];
+  };
+  includeMarker?: boolean;
+};
+
+export function subjectFromRoot(root: string): string {
+  const name = basename(root);
+  return name.length > 0 ? name : root;
 }
 
-function renderConflicts(conflicts: Conflict[]): string {
-  if (conflicts.length === 0) return "## Conflicts\n\nNo conflicts in the always-on instructions.";
-  return [
-    "## Conflicts",
-    "",
-    ...conflicts.flatMap((conflict) => [
-      `### ${conflict.behavior}`,
-      "",
-      conflict.effective
-        ? `- effective: ${conflict.effective.text} (${conflict.effective.path}:${conflict.effective.line}, ${conflict.why})`
-        : null,
-      ...conflict.statements
-        .filter((statement) => statement !== conflict.effective)
-        .map(
-          (statement) =>
-            `- overridden: ${statement.text} (${statement.path}:${statement.line})`,
-        ),
-      `- label: inferred contradiction; ${conflict.resolution === "override" ? "measured winner" : "unresolved"}`,
-      "",
-    ]),
-  ]
-    .filter((line) => line !== null)
-    .join("\n")
-    .trimEnd();
+export function shortSha(sha: string | undefined): string | undefined {
+  if (!sha) return undefined;
+  return sha.length > 7 ? sha.slice(0, 7) : sha;
 }
 
-function renderUnresolved(unresolved: Conflict[]): string | null {
-  if (unresolved.length === 0) return null;
-  return [
-    "## Unresolved",
-    "",
-    ...unresolved.flatMap((conflict) => [
-      `### ${conflict.behavior}`,
-      "",
-      ...conflict.statements.map(
-        (statement) => `- ${statement.text} (${statement.path}:${statement.line})`,
-      ),
-      `- label: inferred contradiction; unresolved`,
-      "",
-    ]),
-  ].join("\n").trimEnd();
-}
+export function renderReport(input: ReportRenderInput): string {
+  const {
+    report,
+    subject,
+    compilePath = ".",
+    mode,
+    baseRef,
+    provenance = null,
+    delta,
+    includeMarker = false,
+  } = input;
 
-function renderLeftOut(report: Report): string | null {
-  if (report.leftOut.length === 0) return null;
-  return [
-    "## Left out",
-    "",
-    ...report.leftOut.map(
-      (item) => `- ${item.path} — ${item.activation}, ${item.reason}`,
+  const findings = mode === "pr_delta" && delta
+    ? [...delta.conflicts, ...delta.unresolved]
+    : [...report.conflicts, ...report.unresolved];
+
+  const lines: string[] = [];
+  if (includeMarker) lines.push("<!-- precedent-report -->", "");
+
+  lines.push("# Precedent", "", `**Subject:** ${subject}`, "");
+
+  if (provenance) {
+    lines.push("## Provenance", "");
+    lines.push(`- Event: ${provenance.event}`);
+    if (provenance.baseRef || provenance.baseSha) {
+      const baseParts = [provenance.baseSha, provenance.baseRef ? `(${provenance.baseRef})` : null]
+        .filter(Boolean)
+        .join(" ");
+      lines.push(`- Base: ${baseParts}`);
+    }
+    if (provenance.headSha) lines.push(`- Head: ${provenance.headSha}`);
+    if (provenance.compareUrl) lines.push(`- Compare: ${provenance.compareUrl}`);
+    lines.push("");
+  }
+
+  lines.push("## Scope", "");
+  lines.push(`- Activation: always-on`);
+  lines.push(`- Compile path: \`${compilePath}\``);
+  lines.push(`- Sources: ${report.sources.length} compiled, ${report.inForce.length} in force`);
+  const pathScoped = [
+    ...new Set(
+      report.inForce
+        .filter((source) => source.appliesUnder)
+        .map((source) => `${source.path} (under \`${source.appliesUnder}\`)`),
     ),
-  ].join("\n");
+  ];
+  if (pathScoped.length > 0) {
+    lines.push(`- Path-scoped: ${pathScoped.join("; ")}`);
+  }
+  if (report.leftOut.length > 0) {
+    lines.push(`- Left out: ${report.leftOut.length} sources (glob, intelligent, manual, or outside compile path)`);
+  }
+  lines.push(`- Out of this report: ${report.missingFromDisk.join("; ")}`);
+  lines.push("");
+
+  lines.push("## Findings", "");
+  if (findings.length === 0) {
+    if (mode === "pr_delta" && baseRef) {
+      lines.push(`No new always-on instruction conflicts relative to ${baseRef}.`);
+    } else {
+      lines.push("No always-on instruction conflicts.");
+    }
+    lines.push("");
+    lines.push(scopeFooter(report));
+  } else {
+    lines.push(...renderNumberedFindings(findings));
+    lines.push("");
+    lines.push(scopeFooter(report));
+  }
+
+  lines.push(
+    "<details>",
+    "<summary>Methodology</summary>",
+    "",
+    "**Measured:** file inventory, activation classification, symlink aliases, and documented layer/specificity order.",
+    "",
+    "**Inferred:** semantic contradiction on always-on statements. Paraphrases of the same action are not a conflict.",
+    "",
+    "This report does not prove model compliance.",
+    "</details>",
+  );
+
+  return lines.join("\n").trim() + "\n";
 }
 
-export function renderPrComment(current: Report, added: {
-  conflicts: Conflict[];
-  unresolved: Conflict[];
-}): string {
-  const body =
-    added.conflicts.length === 0 && added.unresolved.length === 0
-      ? "No new always-on instruction conflicts."
-      : [
-          added.conflicts.length > 0 ? renderConflicts(added.conflicts) : null,
-          added.unresolved.length > 0 ? renderUnresolved(added.unresolved) : null,
-        ]
-          .filter(Boolean)
-          .join("\n\n");
+function scopeFooter(report: Report): string {
+  const hasExtra = report.sources.some((source) => source.kind === "team-rule");
+  const gitOnly =
+    hasExtra
+      ? "Team or user rules passed via flags are included; other Cursor settings rules are not."
+      : "Rules not stored in git are not included in this report.";
+  return `${report.sources.length} sources compiled. ${gitOnly}`;
+}
 
-  return [
-    "<!-- precedent-report -->",
-    "## Precedent",
-    "",
-    `Effective policy for \`${current.path}\`.`,
-    "",
-    body,
-    "",
-    "_measured vs inferred: inventory and documented precedence are measured; contradiction detection is inferred._",
-  ].join("\n");
+function renderNumberedFindings(findings: Conflict[]): string[] {
+  const lines: string[] = [];
+  findings.forEach((finding, index) => {
+    const kind = finding.resolution === "unresolved" ? "unresolved" : "conflict";
+    const label = finding.evidence;
+    lines.push(`${index + 1}. **${finding.behavior}** (\`${kind}\`, ${label})`);
+    if (finding.effective) {
+      lines.push(
+        `   - effective: ${finding.effective.text} (\`${finding.effective.path}:${finding.effective.line}\`, ${finding.why})`,
+      );
+    }
+    for (const statement of finding.statements) {
+      if (
+        finding.effective &&
+        statement.path === finding.effective.path &&
+        statement.line === finding.effective.line
+      )
+        continue;
+      const role = finding.effective ? "overridden" : "statement";
+      lines.push(`   - ${role}: ${statement.text} (\`${statement.path}:${statement.line}\`)`);
+    }
+    lines.push("");
+  });
+  return lines;
+}
+
+export function renderMarkdown(
+  report: Report,
+  options?: Omit<ReportRenderInput, "report">,
+): string {
+  return renderReport({
+    report,
+    subject: options?.subject ?? subjectFromRoot(report.root),
+    compilePath: options?.compilePath ?? ".",
+    mode: options?.mode ?? "full",
+    baseRef: options?.baseRef,
+    provenance: options?.provenance ?? null,
+    delta: options?.delta,
+    includeMarker: options?.includeMarker ?? false,
+  });
+}
+
+export function renderPrComment(
+  current: Report,
+  added: { conflicts: Conflict[]; unresolved: Conflict[] },
+  context: {
+    repository: string;
+    baseRef: string;
+    provenance: ReportProvenance;
+    compilePath?: string;
+  },
+): string {
+  return renderReport({
+    report: current,
+    subject: context.repository,
+    compilePath: context.compilePath ?? ".",
+    mode: "pr_delta",
+    baseRef: context.baseRef,
+    provenance: context.provenance,
+    delta: added,
+    includeMarker: true,
+  });
 }

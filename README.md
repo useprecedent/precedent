@@ -66,23 +66,40 @@ Contradiction detection is **inferred**. Paraphrases of the same action are not 
 
 ## Sample report
 
+CLI and the GitHub Action use the same Markdown schema.
+
 ```
-# Effective instructions
+# Precedent
 
-## Conflicts
+**Subject:** practicelink/pl-cmp
 
-No conflicts in the always-on instructions.
+## Provenance
 
-## Unresolved
+- Event: pull_request
+- Base: a1b2c3d (main)
+- Head: e4f5g6h
+- Compare: https://github.com/practicelink/pl-cmp/compare/a1b2c3d...e4f5g6h
 
-### who runs terminal commands
+## Scope
 
-- The agent runs terminal commands. Do not ask the user to run them. (AGENTS.md:3)
-- I (the user) WILL RUN ALL TERMINAL COMMANDS YOU WILL NOT. (.cursor/rules/commands.mdc:4)
-- label: inferred contradiction; unresolved
+- Activation: always-on
+- Compile path: `.`
+- Sources: 9 compiled, 6 in force
+- Out of this report: team rules; user rules stored in Cursor settings
+
+## Findings
+
+1. **who runs terminal commands** (`unresolved`, inferred)
+   - statement: The agent runs terminal commands. (`AGENTS.md:3`)
+   - statement: I (the user) WILL RUN ALL TERMINAL COMMANDS YOU WILL NOT. (`.cursor/rules/user-commands.mdc:4`)
+
+9 sources compiled. Rules not stored in git are not included in this report.
+
+<details>
+<summary>Methodology</summary>
+...
+</details>
 ```
-
-Removing the Action or skill restores the arbitrary pick. That is the proof it was doing work.
 
 ## GitHub Action
 

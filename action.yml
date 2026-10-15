@@ -3,7 +3,7 @@ description: Precedent — comment on PRs when always-on Cursor policy conflicts
 author: Precedent
 branding:
   icon: git-pull-request
-  color: purple
+  color: blue
 inputs:
   fail-on-unresolved:
     description: Fail the check when unresolved always-on conflicts exist

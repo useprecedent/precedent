@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { compile, newFindings } from "./compile.ts";
 import { defaultHome } from "./inventory.ts";
-import { renderMarkdown } from "./report.ts";
+import { renderMarkdown, subjectFromRoot } from "./report.ts";
 import type { CliOptions, ExtraRule } from "./types.ts";
 
 function parseArgs(argv: string[]): CliOptions {
@@ -132,8 +132,24 @@ function main(): void {
   const baseline = options.compareRoot
     ? compile({ ...options, root: options.compareRoot })
     : null;
-  const view = baseline ? { ...report, ...newFindings(report, baseline) } : report;
-  process.stdout.write(options.json ? `${JSON.stringify(view, null, 2)}\n` : renderMarkdown(view));
+  const delta = baseline ? newFindings(report, baseline) : null;
+  const view = delta ? { ...report, ...delta } : report;
+  if (options.json) {
+    process.stdout.write(`${JSON.stringify(view, null, 2)}\n`);
+  } else {
+    process.stdout.write(
+      renderMarkdown(report, {
+        subject: subjectFromRoot(report.root),
+        compilePath: options.path,
+        mode: delta ? "pr_delta" : "full",
+        baseRef: baseline ? subjectFromRoot(baseline.root) : undefined,
+        provenance: delta
+          ? { event: "local", baseRef: subjectFromRoot(baseline!.root) }
+          : { event: "local" },
+        delta: delta ?? undefined,
+      }),
+    );
+  }
   if (options.failOnUnresolved && view.unresolved.length > 0) process.exit(1);
 }
 

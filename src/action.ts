@@ -4,13 +4,15 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { compile, newFindings } from "./compile.ts";
 import { defaultHome } from "./inventory.ts";
-import { renderPrComment } from "./report.ts";
+import { renderPrComment, shortSha } from "./report.ts";
 
 const COMMENT_MARKER = "<!-- precedent-report -->";
 
 type PullRequest = {
   number: number;
+  html_url: string;
   base: { ref: string; sha: string };
+  head: { sha: string };
 };
 
 function readEvent(): { pull_request?: PullRequest } {
@@ -64,8 +66,14 @@ async function upsertComment(prNumber: number, body: string): Promise<void> {
 
 async function main(): Promise<void> {
   const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd();
+  const repository = process.env.GITHUB_REPOSITORY;
+  if (!repository) throw new Error("GITHUB_REPOSITORY is required");
+
   const failOnUnresolved = (process.env.INPUT_FAIL_ON_UNRESOLVED ?? "false") === "true";
   const event = readEvent();
+  const eventName = process.env.GITHUB_EVENT_NAME ?? "unknown";
+  const headSha = shortSha(process.env.GITHUB_SHA ?? event.pull_request?.head.sha);
+
   const current = compile({
     root: workspace,
     path: ".",
@@ -76,8 +84,25 @@ async function main(): Promise<void> {
   });
 
   let added = { conflicts: current.conflicts, unresolved: current.unresolved };
+  let baseRef = "base";
+  let provenance = {
+    event: eventName,
+    headSha,
+  };
+
   if (event.pull_request) {
-    const baseDir = checkoutBase(event.pull_request.base.sha);
+    const pr = event.pull_request;
+    baseRef = pr.base.ref;
+    const baseSha = shortSha(pr.base.sha);
+    const compareUrl = `https://github.com/${repository}/compare/${pr.base.sha}...${pr.head.sha}`;
+    provenance = {
+      event: eventName,
+      baseRef,
+      baseSha,
+      headSha: shortSha(pr.head.sha) ?? headSha,
+      compareUrl,
+    };
+    const baseDir = checkoutBase(pr.base.sha);
     const baseline = compile({
       root: baseDir,
       path: ".",
@@ -89,11 +114,16 @@ async function main(): Promise<void> {
     added = newFindings(current, baseline);
   }
 
-  const comment = renderPrComment(current, added);
+  const comment = renderPrComment(current, added, {
+    repository,
+    baseRef,
+    provenance,
+    compilePath: ".",
+  });
   writeFileSync(join(workspace, "precedent-report.md"), comment);
   if (event.pull_request) await upsertComment(event.pull_request.number, comment);
 
-  process.stdout.write(comment + "\n");
+  process.stdout.write(comment);
   if (failOnUnresolved && current.unresolved.length > 0) process.exit(1);
 }
 

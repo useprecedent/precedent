@@ -16,7 +16,8 @@ describe("compile + report", () => {
     assert.equal(report.sources.length, 0);
     assert.equal(report.conflicts.length, 0);
     assert.equal(report.unresolved.length, 0);
-    assert.match(renderMarkdown(report), /No conflicts in the always-on instructions/);
+    assert.match(renderMarkdown(report), /No always-on instruction conflicts/);
+    assert.match(renderMarkdown(report), /^# Precedent/m);
   });
 
   it("redacts secrets in reports", () => {
@@ -42,6 +43,19 @@ describe("compile + report", () => {
 
     const added = newFindings(compile(options(current)), compile(options(base)));
     assert.equal(added.unresolved.length, 1);
-    assert.match(renderPrComment(compile(options(current)), added), /Precedent/);
+    const rendered = renderPrComment(compile(options(current)), added, {
+      repository: "acme/widget",
+      baseRef: "main",
+      provenance: {
+        event: "pull_request",
+        baseRef: "main",
+        baseSha: "abc1234",
+        headSha: "def5678",
+        compareUrl: "https://github.com/acme/widget/compare/abc...def",
+      },
+    });
+    assert.match(rendered, /^# Precedent/m);
+    assert.match(rendered, /\*\*Subject:\*\* acme\/widget/);
+    assert.match(rendered, /who runs terminal commands/);
   });
 });
