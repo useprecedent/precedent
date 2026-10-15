@@ -67,6 +67,17 @@ Start a new Cursor chat (or reload the window) so the agent picks up the skill. 
 
 The skill runs the same compiler as the CLI and adds team rules and Cursor-settings user rules that are not on disk. See [SKILL.md](SKILL.md) for the full flow.
 
+Internal slash commands (for example `/instruction-compiler`) can point at the same skill; the installed skill name is `precedent`.
+
+### Session report vs CLI / Action
+
+| Output | When | Includes settings user rules |
+| --- | --- | --- |
+| Skill **Effective instructions** | Cursor chat | Yes, when present in the session |
+| CLI / Action Markdown | Local CI or `npx` | No, unless `--extra-rules` |
+
+The skill uses sections **Conflicts**, **Unresolved**, and **Left out**. CLI and Action use the PR report schema (provenance, numbered findings). A worked monorepo example: [docs/session-report.md](docs/session-report.md).
+
 ## Inputs
 
 **On disk (default compile):**
