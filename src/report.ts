@@ -84,7 +84,7 @@ export function renderReport(input: ReportRenderInput): string {
   lines.push("## Scope", "");
   lines.push("- Activation: always-on");
   if (compilePath !== ".") lines.push(`- Compile path: \`${compilePath}\``);
-  const ecosystems = [...new Set(report.sources.flatMap((source) => source.ecosystems))].sort();
+  const ecosystems = [...new Set(report.inForce.flatMap((source) => source.ecosystems))].sort();
   if (ecosystems.length > 0) lines.push(`- Ecosystems: ${ecosystems.join(", ")}`);
   lines.push(`- Sources: ${report.sources.length} on disk, ${report.inForce.length} in force`);
   const pathScoped = [

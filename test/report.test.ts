@@ -57,6 +57,15 @@ describe("report contract", () => {
     assert.doesNotMatch(md, /## Provenance/);
   });
 
+  it("lists ecosystems from in-force sources on a scoped compile", () => {
+    const root = tempDir();
+    write(root, ".cursor/rules/always.mdc", "---\nalwaysApply: true\n---\nCursor only rule.\n");
+    write(root, ".github/copilot-instructions.md", "Copilot only file.\n");
+    const md = renderMarkdown(compile({ ...options(root), ecosystem: "cursor" }));
+    assert.match(md, /^- Ecosystems: cursor$/m);
+    assert.doesNotMatch(md, /copilot/);
+  });
+
   it("matches the shipped empty PR comment gold file", () => {
     const root = tempDir();
     write(root, "README.md", "ok\n");
