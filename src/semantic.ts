@@ -65,6 +65,53 @@ const TOPICS: Topic[] = [
       },
     ],
   },
+  {
+    id: "git-hooks",
+    behavior: "whether to skip git hooks",
+    poles: [
+      {
+        id: "never-skip",
+        label: "do not skip git hooks",
+        patterns: [
+          /\bdo not skip (the )?(husky )?(pre-push |git )?hooks?\b/i,
+          /\bnever (use|pass) --no-verify\b/i,
+          /\bdo not (use|pass|skip with) --no-verify\b/i,
+        ],
+      },
+      {
+        id: "allow-skip",
+        label: "skip git hooks when asked",
+        patterns: [
+          /\bskip hooks when\b/i,
+          /\b--no-verify when the user\b/i,
+          /\ballow --no-verify\b/i,
+        ],
+      },
+    ],
+  },
+  {
+    id: "force-push",
+    behavior: "force-push to protected branches",
+    poles: [
+      {
+        id: "forbid",
+        label: "do not force-push to main",
+        patterns: [
+          /\bnever force-push to main\b/i,
+          /\bdo not force-push.*main\b/i,
+          /\bwarn if asked\b.{0,40}\bforce-push\b/i,
+        ],
+      },
+      {
+        id: "allow",
+        label: "force-push when requested",
+        patterns: [
+          /\bforce-push.*unless the user asks\b/i,
+          /\ballow force-push when\b/i,
+        ],
+      },
+    ],
+  },
 ];
 
 type Classified = {

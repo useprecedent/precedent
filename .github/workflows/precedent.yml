@@ -4,9 +4,15 @@ on:
     paths:
       - "AGENTS.md"
       - "CLAUDE.md"
+      - "GEMINI.md"
       - "**/AGENTS.md"
       - "**/CLAUDE.md"
+      - "**/GEMINI.md"
+      - "**/AGENTS.override.md"
       - ".cursor/rules/**"
+      - ".claude/**"
+      - ".github/copilot-instructions.md"
+      - ".github/instructions/**"
       - "src/**"
       - "test/**"
 jobs:

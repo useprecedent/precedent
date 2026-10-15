@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { compile, newFindings } from "./compile.ts";
 import { defaultHome } from "./inventory.ts";
+import { isEcosystem } from "./ecosystems.ts";
 import { renderMarkdown, subjectFromRoot } from "./report.ts";
 import type { CliOptions, ExtraRule } from "./types.ts";
 
@@ -13,6 +14,7 @@ function parseArgs(argv: string[]): CliOptions {
     includeUserRules: true,
     includeAncestors: true,
     extraRules: [],
+    ecosystem: "all",
     json: false,
     inventoryOnly: false,
     failOnUnresolved: false,
@@ -72,6 +74,13 @@ function parseArgs(argv: string[]): CliOptions {
       index += 1;
       continue;
     }
+    if (arg === "--ecosystem" && next) {
+      if (next !== "all" && !isEcosystem(next))
+        throw new Error("--ecosystem must be all, cursor, claude-code, codex, copilot, or gemini");
+      options.ecosystem = next === "all" ? "all" : next;
+      index += 1;
+      continue;
+    }
     if (arg === "--help" || arg === "-h") {
       printHelp();
       process.exit(0);
@@ -99,7 +108,7 @@ function readExtraRules(file: string): ExtraRule[] {
 }
 
 function printHelp(): void {
-  process.stdout.write(`Precedent — compile the effective Cursor instruction set
+  process.stdout.write(`Precedent — compile the effective instruction set for a repository path
 
 Usage:
   npx @useprecedent/precedent [root]
@@ -113,9 +122,10 @@ Options:
   --inventory              Print the file inventory JSON the skill uses
   --compare <dir>          Only report findings new vs another compile root
   --extra-rules <file>     JSON array of team/user rules from chat (never on disk)
-  --user-rules             Include ~/.cursor/rules (default locally)
-  --no-user-rules          Skip ~/.cursor/rules (default in CI)
-  --no-ancestors           Skip AGENTS.md / CLAUDE.md above the repo
+  --ecosystem <name>       all (default), cursor, claude-code, codex, copilot, gemini
+  --user-rules             Include user-home instruction files (default locally)
+  --no-user-rules          Skip user-home instruction files (default in CI)
+  --no-ancestors           Skip instruction documents above the repo
   --fail-on-unresolved     Exit 1 when unresolved always-on conflicts exist
 `);
 }

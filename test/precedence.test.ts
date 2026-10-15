@@ -33,6 +33,30 @@ describe("precedence", () => {
     assert.equal(report.unresolved.length, 0);
   });
 
+  it("leaves requestable skills out of the always-on merge", () => {
+    const root = tempDir();
+    write(root, "AGENTS.md", "Root policy is always on.");
+    write(root, ".cursor/skills/demo/SKILL.md", "Only when the skill is named.");
+
+    const report = compile(options(root));
+    const skill = report.leftOut.find((item) => item.path === ".cursor/skills/demo/SKILL.md");
+    assert.ok(skill);
+    assert.match(skill.reason, /skill/);
+    assert.equal(report.inForce.some((item) => item.kind === "skill"), false);
+  });
+
+  it("scopes a compile to one ecosystem", () => {
+    const root = tempDir();
+    write(root, "AGENTS.md", "Shared agents file.");
+    write(root, ".github/copilot-instructions.md", "Copilot only file.");
+    write(root, ".cursor/rules/always.mdc", "---\nalwaysApply: true\n---\nCursor only rule.\n");
+
+    const copilot = compile({ ...options(root), ecosystem: "copilot" });
+    assert.ok(copilot.inForce.some((item) => item.path === ".github/copilot-instructions.md"));
+    assert.ok(copilot.inForce.some((item) => item.path === "AGENTS.md"));
+    assert.ok(copilot.leftOut.some((item) => item.path === ".cursor/rules/always.mdc"));
+  });
+
   it("keeps nested AGENTS.md out when compiling a path outside appliesUnder", () => {
     const root = tempDir();
     write(root, "AGENTS.md", "Root agents file.");

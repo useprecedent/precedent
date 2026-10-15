@@ -8,6 +8,7 @@ import { collectInventory } from "../src/inventory.ts";
 import { tempDir } from "./helpers.ts";
 
 const script = join(dirname(fileURLToPath(import.meta.url)), "..", "scripts", "compile_instructions.py");
+const fixtures = join(dirname(fileURLToPath(import.meta.url)), "fixtures");
 
 function write(path: string, text: string): void {
   mkdirSync(dirname(path), { recursive: true });
@@ -53,6 +54,26 @@ describe("python / ts inventory parity", () => {
     });
 
     assert.deepEqual(ts.sources, python.sources);
-    assert.deepEqual(ts.missingFromDisk, ["team rules", "user rules stored in Cursor settings"]);
+    assert.deepEqual(ts.missingFromDisk, [
+      "team rules",
+      "user rules stored in Cursor settings",
+      "Copilot personal and organization instructions (GitHub UI)",
+      "Claude Code managed settings",
+    ]);
+  });
+
+  it("matches python inventory on the multi-agent fixture", () => {
+    const root = join(fixtures, "multi-agent");
+    const python = JSON.parse(
+      execFileSync("python3", [script, "--root", root, "--home", root], { encoding: "utf8" }),
+    ) as { sources: unknown[] };
+    const ts = collectInventory({
+      root,
+      home: root,
+      includeUserRules: false,
+      includeAncestors: false,
+      extraRules: [],
+    });
+    assert.deepEqual(ts.sources, python.sources);
   });
 });

@@ -84,6 +84,8 @@ export function renderReport(input: ReportRenderInput): string {
   lines.push("## Scope", "");
   lines.push("- Activation: always-on");
   if (compilePath !== ".") lines.push(`- Compile path: \`${compilePath}\``);
+  const ecosystems = [...new Set(report.sources.flatMap((source) => source.ecosystems))].sort();
+  if (ecosystems.length > 0) lines.push(`- Ecosystems: ${ecosystems.join(", ")}`);
   lines.push(`- Sources: ${report.sources.length} on disk, ${report.inForce.length} in force`);
   const pathScoped = [
     ...new Set(
@@ -163,8 +165,8 @@ function compactScopeLineEmpty(report: Report): string {
 
 function outOfReportSentence(report: Report): string {
   const hasExtra = report.sources.some((source) => source.kind === "team-rule");
-  if (hasExtra) return "other Cursor settings rules are not in this report";
-  return "team rules and Cursor settings user rules are not in this report";
+  if (hasExtra) return "other Cursor settings rules are not in this report.";
+  return "team rules and Cursor settings user rules are not in this report.";
 }
 
 function methodologyBlock(): string[] {

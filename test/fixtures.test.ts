@@ -13,4 +13,10 @@ describe("shipped fixtures", () => {
     const behaviors = report.unresolved.map((item) => item.behavior).sort();
     assert.deepEqual(behaviors, ["when to add tests", "who runs terminal commands"]);
   });
+
+  it("finds Cursor vs Copilot vs Claude Code clashes on the multi-agent fixture", () => {
+    const report = compile(options(join(fixtures, "multi-agent")));
+    const behaviors = report.unresolved.map((item) => item.behavior).sort();
+    assert.deepEqual(behaviors, ["when to add tests", "who runs terminal commands"]);
+  });
 });

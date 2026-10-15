@@ -23,10 +23,24 @@ SKIP_DIRS = {
 }
 BODY_LIMIT = 30_000
 FILE_LIMIT = 200_000
+DOCUMENT_NAMES = {
+    "AGENTS.md",
+    "AGENTS.override.md",
+    "CLAUDE.md",
+    "CLAUDE.local.md",
+    "GEMINI.md",
+}
+CONFIG_DIR_NAMES = {".claude", ".github", ".codex", ".copilot"}
+MISSING_FROM_DISK = [
+    "team rules",
+    "user rules stored in Cursor settings",
+    "Copilot personal and organization instructions (GitHub UI)",
+    "Claude Code managed settings",
+]
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Inventory Cursor instruction files.")
+    parser = argparse.ArgumentParser(description="Inventory instruction files for Cursor, Claude Code, Codex, Copilot, and Gemini.")
     parser.add_argument("--root", default=".", help="Workspace root to compile")
     parser.add_argument("--home", default=str(Path.home()), help="Home directory for user rules and ancestor stop")
     args = parser.parse_args()
@@ -40,10 +54,7 @@ def main() -> int:
         {
             "root": str(root),
             "sources": sources,
-            "missingFromDisk": [
-                "team rules",
-                "user rules stored in Cursor settings",
-            ],
+            "missingFromDisk": MISSING_FROM_DISK,
         },
         sys.stdout,
         indent=2,
@@ -55,23 +66,23 @@ def main() -> int:
 def collect(root: Path, home: Path) -> list[dict[str, object]]:
     records: dict[Path, dict[str, object]] = {}
     for path in walk_instruction_files(root):
-        records[location(path)] = source_record(path, root, "project")
+        records[location(path)] = source_record(path, root, layer_for_path(path))
     for directory in ancestor_dirs(root, home):
-        for name in ("AGENTS.md", "CLAUDE.md"):
+        for name in DOCUMENT_NAMES:
             path = directory / name
             placed = location(path)
             if path.is_file() and placed not in records:
                 records[placed] = source_record(path, root, "project")
-    user_rules = home / ".cursor" / "rules"
-    if user_rules.is_dir():
-        for path in sorted(user_rules.rglob("*.mdc")):
-            placed = location(path)
-            if placed in records or skipped(path):
-                continue
-            record = source_record(path, root, "user")
+    for path in walk_user_instruction_files(home):
+        placed = location(path)
+        if placed in records or skipped(path):
+            continue
+        record = source_record(path, root, "user")
+        if ".cursor" in path.parts and "rules" in path.parts:
             record["kind"] = "user-rule"
             record["layer"] = "user"
-            records[placed] = record
+            record["ecosystems"] = ["cursor"]
+        records[placed] = record
     return sorted(records.values(), key=sort_key)
 
 
@@ -79,13 +90,62 @@ def walk_instruction_files(root: Path) -> list[Path]:
     found: list[Path] = []
     for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
         dirnames[:] = [name for name in dirnames if name not in SKIP_DIRS]
+        directory = Path(dirpath)
+        parts = directory.parts
         for name in filenames:
-            if name in {"AGENTS.md", "CLAUDE.md"}:
-                found.append(Path(dirpath) / name)
-    rules = root / ".cursor" / "rules"
-    if rules.is_dir():
-        found.extend(path for path in rules.rglob("*.mdc") if not skipped(path))
+            path = directory / name
+            if name in DOCUMENT_NAMES:
+                found.append(path)
+            elif name == "copilot-instructions.md" and directory.name == ".github":
+                found.append(path)
+            elif name.endswith(".instructions.md") and under_dir(parts, (".github", "instructions")):
+                found.append(path)
+            elif name.endswith(".mdc") and under_dir(parts, (".cursor", "rules")):
+                found.append(path)
+            elif name.endswith(".md") and under_dir(parts, (".claude", "rules")):
+                found.append(path)
+            elif name == "SKILL.md" and "skills" in parts:
+                found.append(path)
+            elif name.endswith(".md") and under_dir(parts, (".claude", "commands")):
+                found.append(path)
     return found
+
+
+def walk_user_instruction_files(home: Path) -> list[Path]:
+    found: list[Path] = []
+    cursor_rules = home / ".cursor" / "rules"
+    if cursor_rules.is_dir():
+        found.extend(path for path in sorted(cursor_rules.rglob("*.mdc")) if not skipped(path))
+    claude_md = home / ".claude" / "CLAUDE.md"
+    if claude_md.is_file():
+        found.append(claude_md)
+    claude_rules = home / ".claude" / "rules"
+    if claude_rules.is_dir():
+        found.extend(path for path in sorted(claude_rules.rglob("*.md")) if not skipped(path))
+    for name in ("AGENTS.md", "AGENTS.override.md"):
+        path = home / ".codex" / name
+        if path.is_file():
+            found.append(path)
+    copilot = home / ".copilot" / "copilot-instructions.md"
+    if copilot.is_file():
+        found.append(copilot)
+    copilot_instructions = home / ".copilot" / "instructions"
+    if copilot_instructions.is_dir():
+        found.extend(
+            path
+            for path in sorted(copilot_instructions.rglob("*.instructions.md"))
+            if not skipped(path)
+        )
+    return found
+
+
+def under_dir(parts: tuple[str, ...], needle: tuple[str, ...]) -> bool:
+    size = len(needle)
+    return any(parts[index : index + size] == needle for index in range(len(parts) - size + 1))
+
+
+def layer_for_path(path: Path) -> str:
+    return "user" if path.name == "CLAUDE.local.md" else "project"
 
 
 def ancestor_dirs(root: Path, home: Path) -> list[Path]:
@@ -113,6 +173,7 @@ def source_record(path: Path, root: Path, layer: str) -> dict[str, object]:
         "path": display_path(path, root),
         "kind": kind,
         "layer": layer,
+        "ecosystems": ecosystems_for(kind, path),
         "activation": activation,
         "specificity": specificity(path, root, kind),
         "appliesUnder": applies_under(path, root, kind),
@@ -135,11 +196,51 @@ def source_record(path: Path, root: Path, layer: str) -> dict[str, object]:
 
 
 def kind_for(path: Path) -> str:
-    if path.name == "AGENTS.md":
+    name = path.name
+    parent = path.parent.name
+    grand = path.parent.parent.name
+    if name in {"AGENTS.md", "AGENTS.override.md"}:
         return "agents-md"
-    if path.name == "CLAUDE.md":
+    if name in {"CLAUDE.md", "CLAUDE.local.md"}:
         return "claude-md"
+    if name == "GEMINI.md":
+        return "gemini-md"
+    if name == "copilot-instructions.md":
+        return "copilot-instructions"
+    if name.endswith(".instructions.md"):
+        return "copilot-path-instructions"
+    if name == "SKILL.md" or parent == "commands":
+        return "skill"
+    if parent == "rules" and grand == ".claude" and name.endswith(".md"):
+        return "claude-rule"
+    if name.endswith(".mdc"):
+        return "project-rule"
     return "project-rule"
+
+
+def ecosystems_for(kind: str, path: Path | None = None) -> list[str]:
+    placed = str(path) if path is not None else ""
+    if kind == "user-rule":
+        if ".claude" in placed:
+            return ["claude-code"]
+        if ".codex" in placed:
+            return ["codex"]
+        if ".copilot" in placed:
+            return ["copilot"]
+        return ["cursor"]
+    if kind == "agents-md":
+        return ["cursor", "codex", "copilot", "claude-code"]
+    if kind in {"claude-md", "claude-rule"}:
+        return ["claude-code", "copilot"]
+    if kind == "gemini-md":
+        return ["gemini", "copilot"]
+    if kind in {"copilot-instructions", "copilot-path-instructions"}:
+        return ["copilot"]
+    if kind == "skill":
+        if ".claude" in placed:
+            return ["claude-code"]
+        return ["cursor"]
+    return ["cursor"]
 
 
 def read_text(path: Path) -> str | None:
@@ -201,7 +302,19 @@ def parse_frontmatter(block: str) -> dict[str, object]:
 
 
 def classify(meta: dict[str, object], kind: str) -> tuple[str, list[str]]:
-    if kind in {"agents-md", "claude-md"}:
+    if kind == "skill":
+        return "manual", []
+    if kind == "copilot-path-instructions":
+        globs = normalize_globs(meta.get("applyTo", meta.get("globs")))
+        if globs:
+            return "glob", globs
+        return "always", []
+    if kind == "claude-rule":
+        globs = normalize_globs(meta.get("paths", meta.get("globs")))
+        if globs:
+            return "glob", globs
+        return "always", []
+    if kind in {"agents-md", "claude-md", "gemini-md", "copilot-instructions"}:
         return "always", []
     globs = normalize_globs(meta.get("globs"))
     if meta.get("alwaysApply") is True:
@@ -248,10 +361,21 @@ def location(path: Path) -> Path:
     return path.parent.resolve() / path.name
 
 
-def specificity(path: Path, root: Path, kind: str) -> int:
-    if kind not in {"agents-md", "claude-md"}:
-        return 0
+def is_scoped_document(kind: str) -> bool:
+    return kind in {"agents-md", "claude-md", "gemini-md", "copilot-instructions"}
+
+
+def scope_parent(path: Path) -> Path:
     parent = location(path).parent
+    if parent.name in CONFIG_DIR_NAMES:
+        return parent.parent
+    return parent
+
+
+def specificity(path: Path, root: Path, kind: str) -> int:
+    if not is_scoped_document(kind):
+        return 0
+    parent = scope_parent(path)
     if parent == root or parent.is_relative_to(root):
         relative = parent.relative_to(root)
         return 0 if relative == Path(".") else len(relative.parts)
@@ -259,9 +383,9 @@ def specificity(path: Path, root: Path, kind: str) -> int:
 
 
 def applies_under(path: Path, root: Path, kind: str) -> str | None:
-    if kind not in {"agents-md", "claude-md"}:
+    if not is_scoped_document(kind):
         return None
-    parent = location(path).parent
+    parent = scope_parent(path)
     if not parent.is_relative_to(root):
         return None
     relative = parent.relative_to(root)

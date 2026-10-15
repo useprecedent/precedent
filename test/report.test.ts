@@ -1,8 +1,13 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { describe, it } from "node:test";
+import { fileURLToPath } from "node:url";
 import { compile } from "../src/compile.ts";
 import { compareUrlForRef, renderMarkdown, renderPrComment } from "../src/report.ts";
 import { options, tempDir, write } from "./helpers.ts";
+
+const fixtures = join(dirname(fileURLToPath(import.meta.url)), "fixtures");
 
 describe("report contract", () => {
   it("builds compare URLs with short SHAs", () => {
@@ -50,5 +55,28 @@ describe("report contract", () => {
     assert.doesNotMatch(md, /Compile path/);
     assert.doesNotMatch(md, /## Findings/);
     assert.doesNotMatch(md, /## Provenance/);
+  });
+
+  it("matches the shipped empty PR comment gold file", () => {
+    const root = tempDir();
+    write(root, "README.md", "ok\n");
+    const report = compile(options(root));
+    const md = renderPrComment(
+      report,
+      { conflicts: [], unresolved: [] },
+      {
+        repository: "practicelink/pl-cmp",
+        baseRef: "main",
+        provenance: {
+          event: "pull_request",
+          baseRef: "main",
+          baseSha: "a1b2c3d",
+          headSha: "e4f5a6b",
+          compareUrl: "https://github.com/practicelink/pl-cmp/compare/a1b2c3d...e4f5a6b",
+        },
+      },
+    );
+    const gold = readFileSync(join(fixtures, "golden-pr-comment-empty.md"), "utf8");
+    assert.equal(md.trimEnd(), gold.trimEnd());
   });
 });

@@ -30,5 +30,6 @@ export function options(root: string, path = "."): CompileOptions {
     includeUserRules: false,
     includeAncestors: false,
     extraRules: [],
+    ecosystem: "all",
   };
 }

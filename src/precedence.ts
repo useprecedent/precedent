@@ -1,5 +1,6 @@
 import { isAbsolute, relative, resolve, sep } from "node:path";
-import type { Kind, LeftOut, Source } from "./types.ts";
+import { isDocumentKind, sourceMatchesEcosystem } from "./ecosystems.ts";
+import type { Ecosystem, Kind, LeftOut, Source } from "./types.ts";
 
 const LAYER_RANK: Record<Source["layer"], number> = {
   team: 3,
@@ -11,12 +12,21 @@ export function selectInForce(
   sources: Source[],
   root: string,
   targetPath: string,
+  ecosystem: "all" | Ecosystem = "all",
 ): { inForce: Source[]; leftOut: LeftOut[] } {
   const target = resolve(targetPath);
   const inForce: Source[] = [];
   const leftOut: LeftOut[] = [];
 
   for (const source of sources) {
+    if (!sourceMatchesEcosystem(source, ecosystem)) {
+      leftOut.push({
+        path: source.path,
+        activation: source.activation,
+        reason: `ecosystems ${source.ecosystems.join(", ")}; compile scoped to ${ecosystem}`,
+      });
+      continue;
+    }
     if (source.aliasOf) {
       leftOut.push({
         path: source.path,
@@ -65,7 +75,7 @@ export function documentSpecificityWins(a: Source, b: Source): Source | null {
 }
 
 function isDocument(kind: Kind): boolean {
-  return kind === "agents-md" || kind === "claude-md";
+  return isDocumentKind(kind);
 }
 
 function covers(root: string, appliesUnder: string, target: string): boolean {
@@ -75,6 +85,7 @@ function covers(root: string, appliesUnder: string, target: string): boolean {
 }
 
 function leftOutReason(source: Source): string {
+  if (source.kind === "skill") return "skill; requestable; not merged in v1";
   if (source.activation === "glob")
     return `glob ${source.globs.join(", ") || "(none)"}; out of semantic v1 until a task matches`;
   if (source.activation === "intelligent")
