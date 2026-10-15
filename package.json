@@ -1,6 +1,6 @@
 {
   "name": "@useprecedent/precedent",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Precedent — effective policy for this path. Compile Cursor instructions and report always-on conflicts.",
   "author": "Precedent",
   "type": "module",
