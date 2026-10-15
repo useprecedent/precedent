@@ -22,9 +22,9 @@ In Cursor, ask for effective policy, conflicting rules, or use your team slash c
 
 When **Conflicts** is empty, the report should still say whether always-on instructions agree. **Left out** is expected on monorepos with per-app `AGENTS.md` files.
 
-## Example (monorepo, redacted)
+## Example (monorepo, fictional paths)
 
-Real output from a work machine compiling a repo root task while nested app policies and plugin rules exist elsewhere:
+Illustrative report for a root-level task while nested app policies and plugin rules exist elsewhere (app names are placeholders, not a real repo layout):
 
 ```markdown
 # Effective instructions
@@ -35,14 +35,14 @@ Real output from a work machine compiling a repo root task while nested app poli
 - overridden: Skip hooks when the user explicitly requests it. (Cursor settings user rule: committing-changes-with-git)
 
 ### Force-push to main or master
-- effective: Do not force-push, hard-reset, or rewrite published history unless Jake asks. (`CLAUDE.md`, project wins over a user rule)
+- effective: Do not force-push, hard-reset, or rewrite published history unless the user asks. (`CLAUDE.md`, project wins over a user rule)
 - overridden: Never force-push to main or master; warn if asked. (Cursor settings user rule: committing-changes-with-git)
 
 ## Left out
-- `apps/career-shell/AGENTS.md` — always, applies under `apps/career-shell`; this task does not work there
-- `apps/cv-manager/AGENTS.md` — always, applies under `apps/cv-manager`; this task does not work there
-- `apps/meded/AGENTS.md` — always, applies under `apps/meded`; this task does not work there
-- `apps/meded/CLAUDE.md` — always, alias of `apps/meded/AGENTS.md`, so it is the same text and applies under `apps/meded`
+- `apps/butterfly-mansion/AGENTS.md` — always, applies under `apps/butterfly-mansion`; this task does not work there
+- `apps/swordsmith-village/AGENTS.md` — always, applies under `apps/swordsmith-village`; this task does not work there
+- `apps/asakusa/AGENTS.md` — always, applies under `apps/asakusa`; this task does not work there
+- `apps/asakusa/CLAUDE.md` — always, alias of `apps/asakusa/AGENTS.md`, so it is the same text and applies under `apps/asakusa`
 - `…/plugins/…/rules/cloud-database.mdc` — requestable, Lovable Cloud Postgres is not this task
 - `…/plugins/…/rules/lovable-workflow.mdc` — requestable, driving a Lovable project is not this task
 - Cursor settings user rule: browser verification — applies when implementing or fixing a web application; this task does not
