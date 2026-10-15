@@ -6,7 +6,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ### Added
 
-- Gold Action comment: live `pl-cmp` finding (who runs terminal commands) at `docs/gold-action-comment.md` and `docs/gold-action-comment.png`.
+- Gold Action comment: live finding (who runs terminal commands) at `docs/gold-action-comment.md` and `docs/gold-action-comment.png`. Subject in the sample is `demonslayer/hashira`.
 
 ### Changed
 

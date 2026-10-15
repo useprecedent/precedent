@@ -1,6 +1,6 @@
 # Gold Action comment
 
-Live GitHub Action comment on `practicelink/pl-cmp` (follow-up PR vs `develop`, 2026-10-15). Semantic v1 cited an unresolved always-on clash: who runs terminal commands.
+Live GitHub Action comment (2026-10-15), subject redacted to `demonslayer/hashira`. Semantic v1 cited an unresolved always-on clash: who runs terminal commands.
 
 Screenshot: [gold-action-comment.png](gold-action-comment.png)
 
@@ -11,14 +11,14 @@ The Markdown below matches the Action renderer (`src/report.ts`) for a PR with n
 
 # Precedent
 
-practicelink/pl-cmp
+demonslayer/hashira
 
 ## Provenance
 
 - Event: pull_request
 - Base: 181cb96 (develop)
 - Head: 3437722
-- Compare: [compare](https://github.com/practicelink/pl-cmp/compare/181cb96...3437722)
+- Compare: [compare](https://github.com/demonslayer/hashira/compare/181cb96...3437722)
 
 ## Scope
 

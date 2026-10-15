@@ -12,11 +12,11 @@ const fixtures = join(dirname(fileURLToPath(import.meta.url)), "fixtures");
 describe("report contract", () => {
   it("builds compare URLs with short SHAs", () => {
     const url = compareUrlForRef(
-      "practicelink/pl-cmp",
+      "demonslayer/hashira",
       "a1b2c3d4e5f6789012345678901234567890abcd",
       "e4f5a6b7c8d9012345678901234567890abcd",
     );
-    assert.equal(url, "https://github.com/practicelink/pl-cmp/compare/a1b2c3d...e4f5a6b");
+    assert.equal(url, "https://github.com/demonslayer/hashira/compare/a1b2c3d...e4f5a6b");
   });
 
   it("uses directory basename as local subject", () => {
@@ -74,14 +74,14 @@ describe("report contract", () => {
       report,
       { conflicts: [], unresolved: [] },
       {
-        repository: "practicelink/pl-cmp",
+        repository: "demonslayer/hashira",
         baseRef: "main",
         provenance: {
           event: "pull_request",
           baseRef: "main",
           baseSha: "a1b2c3d",
           headSha: "e4f5a6b",
-          compareUrl: "https://github.com/practicelink/pl-cmp/compare/a1b2c3d...e4f5a6b",
+          compareUrl: "https://github.com/demonslayer/hashira/compare/a1b2c3d...e4f5a6b",
         },
       },
     );
