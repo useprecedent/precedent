@@ -16,6 +16,10 @@ try {
     stdio: "inherit",
   });
 } finally {
-  rmSync(installDir, { recursive: true, force: true });
-  rmSync(tarballPath, { force: true });
+  try {
+    rmSync(installDir, { recursive: true, force: true });
+  } catch {}
+  try {
+    rmSync(tarballPath, { force: true });
+  } catch {}
 }
