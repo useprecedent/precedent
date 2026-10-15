@@ -102,7 +102,7 @@ function printHelp(): void {
   process.stdout.write(`Precedent — compile the effective Cursor instruction set
 
 Usage:
-  npx precedent [root]
+  npx @useprecedent/precedent [root]
   python3 scripts/compile_instructions.py --root .
 
 Options:

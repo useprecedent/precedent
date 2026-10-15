@@ -1,5 +1,5 @@
 {
-  "name": "precedent",
+  "name": "@useprecedent/precedent",
   "version": "0.1.0",
   "description": "Precedent — effective policy for this path. Compile Cursor instructions and report always-on conflicts.",
   "author": "Precedent",
@@ -12,6 +12,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/useprecedent/precedent.git"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "bin": {
     "precedent": "./bin/precedent.js"

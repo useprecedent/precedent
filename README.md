@@ -16,7 +16,7 @@ Free for one person and one repo. No account. Team and Cloud come later.
 
 | Surface | What it does |
 | --- | --- |
-| CLI | `npx precedent` — Markdown report, or JSON |
+| CLI | `npx @useprecedent/precedent` — Markdown report, or JSON |
 | GitHub Action | Comments when a PR changes always-on policy. Optional fail-on-unresolved |
 | Skill | Same compiler, for a local Cursor session |
 
@@ -25,12 +25,12 @@ Honest labels: **measured** is file inventory and documented precedence. **infer
 ## Install
 
 ```bash
-npx precedent
+npx @useprecedent/precedent
 ```
 
 ```bash
-npx precedent --root . --json
-npx precedent --root . --inventory
+npx @useprecedent/precedent --root . --json
+npx @useprecedent/precedent --root . --inventory
 ```
 
 Node 22+ is required for `npx`. The measured inventory is also a Python script with the same JSON:

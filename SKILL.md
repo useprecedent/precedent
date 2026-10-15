@@ -16,8 +16,8 @@ python3 scripts/compile_instructions.py --root .
 Or the product CLI (same inventory JSON, plus the Markdown / semantic report):
 
 ```
-npx --yes precedent --root . --inventory
-npx --yes precedent --root .
+npx --yes @useprecedent/precedent --root . --inventory
+npx --yes @useprecedent/precedent --root .
 ```
 
 The CLI sees files only. After it runs, add every team rule and every user rule from this chat that is not already in sources. Give team rules layer `team` and specificity 0. Give settings user rules layer `user` and specificity 0.
@@ -27,7 +27,7 @@ The CLI sees files only. After it runs, add every team rule and every user rule 
 To feed chat-only rules without pretending they are on disk:
 
 ```
-npx --yes precedent --root . --extra-rules extra-rules.json
+npx --yes @useprecedent/precedent --root . --extra-rules extra-rules.json
 ```
 
 ## Decide
