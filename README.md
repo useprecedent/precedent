@@ -125,7 +125,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: useprecedent/precedent@v1
+      - uses: useprecedent/precedent@v1.1
         with:
           fail-on-unresolved: false
 ```
