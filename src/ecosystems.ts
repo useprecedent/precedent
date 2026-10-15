@@ -36,8 +36,8 @@ export function ecosystemsFor(kind: Kind, path = ""): Ecosystem[] {
   const segments = path.split(/[/\\]/);
   if (segments.includes(".codex") || basename(path) === "AGENTS.override.md") return ["codex"];
   if (kind === "user-rule") {
-    if (path.includes(".claude")) return ["claude-code"];
-    if (path.includes(".copilot")) return ["copilot"];
+    if (segments.includes(".claude")) return ["claude-code"];
+    if (segments.includes(".copilot")) return ["copilot"];
     return ["cursor"];
   }
   if (kind === "agents-md") return ["cursor", "codex", "copilot", "claude-code"];
@@ -45,7 +45,7 @@ export function ecosystemsFor(kind: Kind, path = ""): Ecosystem[] {
   if (kind === "gemini-md") return ["gemini", "copilot"];
   if (kind === "copilot-instructions" || kind === "copilot-path-instructions") return ["copilot"];
   if (kind === "skill") {
-    if (path.includes(".claude")) return ["claude-code"];
+    if (segments.includes(".claude")) return ["claude-code"];
     return ["cursor"];
   }
   if (kind === "project-rule" || kind === "team-rule") return ["cursor"];

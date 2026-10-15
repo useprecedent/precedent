@@ -219,15 +219,14 @@ def kind_for(path: Path) -> str:
 
 
 def ecosystems_for(kind: str, path: Path | None = None) -> list[str]:
-    placed = str(path) if path is not None else ""
     parts = path.parts if path is not None else ()
     name = path.name if path is not None else ""
     if ".codex" in parts or name == "AGENTS.override.md":
         return ["codex"]
     if kind == "user-rule":
-        if ".claude" in placed:
+        if ".claude" in parts:
             return ["claude-code"]
-        if ".copilot" in placed:
+        if ".copilot" in parts:
             return ["copilot"]
         return ["cursor"]
     if kind == "agents-md":
@@ -239,7 +238,7 @@ def ecosystems_for(kind: str, path: Path | None = None) -> list[str]:
     if kind in {"copilot-instructions", "copilot-path-instructions"}:
         return ["copilot"]
     if kind == "skill":
-        if ".claude" in placed:
+        if ".claude" in parts:
             return ["claude-code"]
         return ["cursor"]
     return ["cursor"]

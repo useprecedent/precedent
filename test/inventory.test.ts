@@ -69,6 +69,8 @@ describe("inventory", () => {
     write(root, ".claude/rules/always.md", "Always-on Claude rule.");
     write(root, ".claude/rules/scoped.md", "---\npaths: src/**/*.ts\n---\nScoped Claude rule.\n");
     write(root, ".cursor/skills/demo/SKILL.md", "A requestable skill.");
+    write(root, ".cursor/skills/demo.claude/SKILL.md", "Cursor skill whose folder name contains .claude.");
+    write(root, ".claude/skills/demo/SKILL.md", "Claude Code skill.");
     write(root, "AGENTS.override.md", "Codex override.");
 
     const sources = collectInventory({
@@ -95,6 +97,8 @@ describe("inventory", () => {
     assert.deepEqual(byPath["AGENTS.override.md"]?.ecosystems, ["codex"]);
     assert.equal(byPath[".cursor/skills/demo/SKILL.md"]?.kind, "skill");
     assert.equal(byPath[".cursor/skills/demo/SKILL.md"]?.activation, "manual");
+    assert.deepEqual(byPath[".cursor/skills/demo.claude/SKILL.md"]?.ecosystems, ["cursor"]);
+    assert.deepEqual(byPath[".claude/skills/demo/SKILL.md"]?.ecosystems, ["claude-code"]);
     assert.ok(byPath["AGENTS.md"]?.ecosystems.includes("codex"));
     assert.ok(byPath["AGENTS.md"]?.ecosystems.includes("copilot"));
   });
