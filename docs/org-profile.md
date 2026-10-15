@@ -6,7 +6,7 @@
 
 Compile the effective instruction set for a repository path. Report always-on conflicts with citations.
 
-Mark: stacked P, indigo `#1E3A8A` on white (`brand/mark.svg`, `brand/favicon.svg`). Raster uploads for the GitHub org avatar, npm icon, and profile header live in the Product Hub kit, not in this repository.
+Mark: stacked P, indigo `#1E3A8A` on white. Vectors: `brand/mark.svg`, `brand/favicon.svg`. Square raster `brand/p-precedent.png` (1024×1024) is the GitHub org avatar and npm icon. Wordmark `brand/precedent.png` (1280×720) is the org profile header.
 
 This organization publishes [useprecedent/precedent](https://github.com/useprecedent/precedent) and [@useprecedent/precedent](https://www.npmjs.com/package/@useprecedent/precedent) (Apache-2.0).
 
