@@ -4,7 +4,7 @@ on:
     branches: [main, develop]
   pull_request:
 jobs:
-  test:
+  test-matrix:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -19,3 +19,17 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npm run smoke:packaged-cli
+
+  # Branch protection on main requires the check context "test" (single job name).
+  # Matrix legs report as "test-matrix (22)" / "(26)" and do not satisfy that rule.
+  test:
+    needs: test-matrix
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    steps:
+      - name: Require all Node versions
+        run: |
+          if [ "${{ needs.test-matrix.result }}" != "success" ]; then
+            echo "test-matrix result: ${{ needs.test-matrix.result }}"
+            exit 1
+          fi
