@@ -13,7 +13,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 - README Action example pins `v1.4` (`41b4416`).
 - README and skill document skill activation: `description` is description-gated; `disable-model-invocation: true` stays named-only.
-- Action path filters include `**/*.mdc` so edits to `rules/` next to a `.cursor-plugin` pack retrigger the compile; `**/.cursor-plugin/**` only matches pack metadata.
+- Action path filters watch pack rule files as `**/*.mdc`, `**/rules/*.md`, and `**/rules/*.markdown`; `**/.cursor-plugin/**` only matches pack metadata.
 
 ## 1.0.0 - 2026-10-15
 

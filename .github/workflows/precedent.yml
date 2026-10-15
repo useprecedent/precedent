@@ -13,6 +13,8 @@ on:
       - ".cursor/plugins/**"
       - "**/.cursor-plugin/**"
       - "**/*.mdc"
+      - "**/rules/*.md"
+      - "**/rules/*.markdown"
       - ".cursor/skills/**"
       - ".agents/skills/**"
       - ".claude/**"
