@@ -13,14 +13,27 @@ function isInstalledPackage(root) {
   return root.replaceAll("\\", "/").includes("/node_modules/");
 }
 
-if (existsSync(distCli) && isInstalledPackage(packageRoot)) {
-  await import(pathToFileURL(distCli).href);
-} else {
+function runStripTypesCli() {
   const child = spawn(process.execPath, ["--experimental-strip-types", srcCli, ...args], {
     stdio: "inherit",
+  });
+  child.on("error", (error) => {
+    console.error(error);
+    process.exit(1);
   });
   child.on("exit", (code, signal) => {
     if (signal) process.kill(process.pid, signal);
     process.exit(code ?? 1);
   });
+}
+
+if (existsSync(distCli) && isInstalledPackage(packageRoot)) {
+  try {
+    await import(pathToFileURL(distCli).href);
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
+} else {
+  runStripTypesCli();
 }
