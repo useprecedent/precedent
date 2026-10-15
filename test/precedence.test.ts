@@ -57,6 +57,19 @@ describe("precedence", () => {
     assert.ok(copilot.leftOut.some((item) => item.path === ".cursor/rules/always.mdc"));
   });
 
+  it("leaves Codex-only files out of a cursor compile", () => {
+    const home = tempDir("precedent-home-");
+    const root = tempDir();
+    write(root, "AGENTS.md", "Shared agents file.");
+    write(root, "AGENTS.override.md", "Codex override.");
+    write(home, ".codex/AGENTS.md", "User Codex file.");
+
+    const cursor = compile({ ...options(root), home, includeUserRules: true, ecosystem: "cursor" });
+    assert.ok(cursor.inForce.some((item) => item.path === "AGENTS.md"));
+    assert.ok(cursor.leftOut.some((item) => item.path === "AGENTS.override.md"));
+    assert.ok(cursor.leftOut.some((item) => item.path.includes(".codex")));
+  });
+
   it("keeps nested AGENTS.md out when compiling a path outside appliesUnder", () => {
     const root = tempDir();
     write(root, "AGENTS.md", "Root agents file.");

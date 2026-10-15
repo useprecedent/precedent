@@ -33,9 +33,10 @@ export function kindFor(path: string): Kind {
 }
 
 export function ecosystemsFor(kind: Kind, path = ""): Ecosystem[] {
+  const segments = path.split(/[/\\]/);
+  if (segments.includes(".codex") || basename(path) === "AGENTS.override.md") return ["codex"];
   if (kind === "user-rule") {
     if (path.includes(".claude")) return ["claude-code"];
-    if (path.includes(".codex")) return ["codex"];
     if (path.includes(".copilot")) return ["copilot"];
     return ["cursor"];
   }

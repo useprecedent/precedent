@@ -92,6 +92,7 @@ describe("inventory", () => {
     assert.equal(byPath[".claude/rules/scoped.md"]?.activation, "glob");
     assert.equal(byPath["GEMINI.md"]?.kind, "gemini-md");
     assert.equal(byPath["AGENTS.override.md"]?.kind, "agents-md");
+    assert.deepEqual(byPath["AGENTS.override.md"]?.ecosystems, ["codex"]);
     assert.equal(byPath[".cursor/skills/demo/SKILL.md"]?.kind, "skill");
     assert.equal(byPath[".cursor/skills/demo/SKILL.md"]?.activation, "manual");
     assert.ok(byPath["AGENTS.md"]?.ecosystems.includes("codex"));
@@ -118,6 +119,8 @@ describe("inventory", () => {
     assert.ok(kinds.includes("agents-md"));
     assert.ok(kinds.includes("copilot-instructions"));
     assert.ok(sources.some((source) => source.layer === "user" && source.kind === "claude-md"));
+    const userCodex = sources.find((source) => source.kind === "agents-md" && source.layer === "user");
+    assert.deepEqual(userCodex?.ecosystems, ["codex"]);
   });
 
   it("does not treat a symlink as a second authority in the compile", () => {

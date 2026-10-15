@@ -220,11 +220,13 @@ def kind_for(path: Path) -> str:
 
 def ecosystems_for(kind: str, path: Path | None = None) -> list[str]:
     placed = str(path) if path is not None else ""
+    parts = path.parts if path is not None else ()
+    name = path.name if path is not None else ""
+    if ".codex" in parts or name == "AGENTS.override.md":
+        return ["codex"]
     if kind == "user-rule":
         if ".claude" in placed:
             return ["claude-code"]
-        if ".codex" in placed:
-            return ["codex"]
         if ".copilot" in placed:
             return ["copilot"]
         return ["cursor"]
