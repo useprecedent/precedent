@@ -75,6 +75,10 @@ describe("python / ts inventory parity", () => {
       join(root, ".cursor", "plugins", "ship", "skills", "deploy", "SKILL.md"),
       "---\nname: deploy\ndescription: Deploy the app\n---\n\nDeploy skill.\n",
     );
+    write(
+      join(root, ".cursor", "skills", "gated", "SKILL.md"),
+      "---\nname: gated\ndescription: Use when gating\ndisable-model-invocation: true\n---\n\nGated skill.\n",
+    );
     write(join(root, "pack", ".cursor-plugin", "plugin.json"), "{\"name\":\"pack\"}\n");
     write(
       join(root, "pack", "rules", "always.mdc"),

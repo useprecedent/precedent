@@ -138,6 +138,10 @@ class CompileInstructionsTest(unittest.TestCase):
                 root / ".cursor" / "plugins" / "ship" / "skills" / "deploy" / "SKILL.md",
                 "---\nname: deploy\ndescription: Deploy the app\n---\n\nDeploy skill.\n",
             )
+            write(
+                root / ".cursor" / "skills" / "gated" / "SKILL.md",
+                "---\nname: gated\ndescription: Use when gating\ndisable-model-invocation: true\n---\n\nGated skill.\n",
+            )
             write(root / "pack" / ".cursor-plugin" / "plugin.json", '{"name":"pack"}\n')
             write(
                 root / "pack" / "rules" / "always.mdc",
@@ -167,6 +171,9 @@ class CompileInstructionsTest(unittest.TestCase):
         skill = by_path[".cursor/plugins/ship/skills/deploy/SKILL.md"]
         self.assertEqual(skill["kind"], "skill")
         self.assertEqual(skill["activation"], "intelligent")
+        gated = by_path[".cursor/skills/gated/SKILL.md"]
+        self.assertEqual(gated["kind"], "skill")
+        self.assertEqual(gated["activation"], "manual")
         pack = by_path["pack/rules/always.mdc"]
         self.assertEqual(pack["kind"], "plugin-rule")
         personal = next(source for source in payload["sources"] if source["path"].endswith("skills/personal/SKILL.md"))
