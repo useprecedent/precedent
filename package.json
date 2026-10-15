@@ -44,6 +44,7 @@
     "build": "node scripts/build.mjs",
     "prepublishOnly": "npm run build",
     "precedent": "node --experimental-strip-types src/cli.ts",
+    "smoke:packaged-cli": "node scripts/smoke-packaged-cli.mjs",
     "test": "python3 scripts/test_compile_instructions.py && node --experimental-strip-types --test test/*.test.ts",
     "compile": "node --experimental-strip-types src/cli.ts"
   },
