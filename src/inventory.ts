@@ -78,7 +78,7 @@ export function collectInventory(options: {
       appliesUnder: null,
       description: extra.title,
       globs: [],
-      body: extra.text,
+      body: redact(extra.text),
     });
   }
 
