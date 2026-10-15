@@ -127,6 +127,28 @@ describe("inventory", () => {
     assert.deepEqual(userCodex?.ecosystems, ["codex"]);
   });
 
+  it("treats CLAUDE.local.md as user layer so project CLAUDE.md wins", () => {
+    const root = tempDir();
+    write(root, "CLAUDE.md", "The agent runs terminal commands. Do not ask the user to run them.\n");
+    write(root, "CLAUDE.local.md", "I (the user) WILL RUN ALL TERMINAL COMMANDS YOU WILL NOT.\n");
+
+    const sources = collectInventory({
+      root,
+      home: root,
+      includeUserRules: false,
+      includeAncestors: false,
+      extraRules: [],
+    }).sources;
+    const byPath = Object.fromEntries(sources.map((source) => [source.path, source]));
+    assert.equal(byPath["CLAUDE.local.md"]?.layer, "user");
+    assert.equal(byPath["CLAUDE.md"]?.layer, "project");
+
+    const report = compile(options(root));
+    assert.equal(report.unresolved.length, 0);
+    assert.equal(report.conflicts.length, 1);
+    assert.equal(report.conflicts[0]?.effective?.layer, "project");
+  });
+
   it("does not treat a symlink as a second authority in the compile", () => {
     const root = tempDir();
     write(root, "apps/meded/AGENTS.md", "The agent runs terminal commands for this app.");
