@@ -4,9 +4,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## Unreleased
 
+### Changed
+
+- README Action example pins `v1.5` (`03f2eff`).
+
 ## 1.1.0 - 2026-10-15
 
-npm `@useprecedent/precedent` is `1.1.0`. The GitHub Action moving tag remains `v1.4` until the follow-up release tag.
+npm `@useprecedent/precedent` is `1.1.0`. The GitHub Action moving tag for this cut is `v1.5`.
 
 ### Added
 
