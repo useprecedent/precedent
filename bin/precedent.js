@@ -27,6 +27,7 @@ function runStripTypesCli() {
   });
 }
 
+// Use compiled dist only when installed via npm; prefer source in local git clones to avoid stale build artifacts
 if (existsSync(distCli) && isInstalledPackage(packageRoot)) {
   try {
     await import(pathToFileURL(distCli).href);
