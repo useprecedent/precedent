@@ -6,7 +6,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## 1.0.0 - 2026-10-15
 
-This cut freezes the Markdown report contract. A break in that schema after this version is a major.
+This cut freezes the Markdown report contract. A break in that schema after this version is a major. npm `@useprecedent/precedent` is `1.0.0`. The GitHub Action moving tag remains `v1.3` until the follow-up release tag.
 
 ### Added
 
