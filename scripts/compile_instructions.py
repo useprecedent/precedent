@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -36,6 +37,11 @@ MISSING_FROM_DISK = [
     "user rules stored in Cursor settings",
     "Copilot personal and organization instructions (GitHub UI)",
     "Claude Code managed settings",
+]
+SECRET_PATTERNS = [
+    re.compile(r"\b(sk|rk|pk|ghp|gho|github_pat|xox[baprs]|AKIA)[A-Za-z0-9_\-]{8,}\b"),
+    re.compile(r"\b(api[_-]?key|token|secret|password|passwd|authorization)\s*[:=]\s*\S+", re.I),
+    re.compile(r"\bBearer\s+[A-Za-z0-9\-._~+/]+=*", re.I),
 ]
 
 
@@ -188,11 +194,18 @@ def source_record(path: Path, root: Path, layer: str) -> dict[str, object]:
     if activation != "always":
         return record
     if len(body) > BODY_LIMIT:
-        record["body"] = body[:BODY_LIMIT]
+        record["body"] = redact(body[:BODY_LIMIT])
         record["bodyTruncated"] = True
         return record
-    record["body"] = body
+    record["body"] = redact(body)
     return record
+
+
+def redact(text: str) -> str:
+    redacted = text
+    for pattern in SECRET_PATTERNS:
+        redacted = pattern.sub("[REDACTED]", redacted)
+    return redacted
 
 
 def kind_for(path: Path) -> str:

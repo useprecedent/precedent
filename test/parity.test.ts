@@ -22,7 +22,7 @@ describe("python / ts inventory parity", () => {
     write(join(home, "CLAUDE.md"), "Ancestor says the agent runs commands.\n");
     write(join(home, ".cursor", "rules", "commands.mdc"), "---\nalwaysApply: true\n---\n\nThe user runs every command.\n");
     write(join(root, "CLAUDE.md"), "Project says to run npm run verify.\n");
-    write(join(root, "AGENTS.md"), "Project agents file.\n");
+    write(join(root, "AGENTS.md"), "Project agents file. Never commit api_key=sk-super-secret-value-123456.\n");
     write(join(root, "apps", "web", "AGENTS.md"), "Web agents file.\n");
     mkdirSync(join(root, "apps", "web"), { recursive: true });
     symlinkSync("AGENTS.md", join(root, "apps", "web", "CLAUDE.md"));

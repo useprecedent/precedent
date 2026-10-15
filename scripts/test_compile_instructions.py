@@ -125,6 +125,23 @@ class CompileInstructionsTest(unittest.TestCase):
         self.assertIn("The user runs every command.", user["body"])
         self.assertEqual(sources[-1]["path"], user["path"])
 
+    def test_redacts_secrets_in_inventory_bodies(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            home = (Path(tmp) / "home").resolve()
+            root = (home / "projects" / "app").resolve()
+            write(
+                root / "AGENTS.md",
+                "Never commit api_key=sk-super-secret-value-123456 in examples.\n",
+            )
+
+            completed = compile_workspace(root, home)
+
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        payload = json.loads(completed.stdout)
+        body = next(source["body"] for source in payload["sources"] if source["path"] == "AGENTS.md")
+        self.assertNotIn("sk-super-secret-value-123456", body)
+        self.assertIn("[REDACTED]", body)
+
     def test_missing_root_exits_with_an_error(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             completed = compile_workspace(Path(tmp) / "missing", Path(tmp) / "home")
