@@ -4,6 +4,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## Unreleased
 
+### Added
+
+- Skills and plugins as a fourth instruction source: always-on Cursor plugin rules join the merge; requestable skills and plugin rules are inventoried and left out until the task matches them.
+- Inventory for `.cursor/plugins/**/rules`, `.cursor-plugin` packs, `~/.cursor/plugins/local`, and user-home `SKILL.md` files (`~/.cursor/skills`, `~/.claude/skills`, `~/.agents/skills`, `~/.copilot/skills`, `~/.gemini/skills`). `~/.cursor/skills-cursor` and marketplace plugin cache are not inventoried.
+
 ### Changed
 
 - README Action example pins `v1.4` (`41b4416`).

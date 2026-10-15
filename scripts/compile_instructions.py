@@ -37,6 +37,7 @@ MISSING_FROM_DISK = [
     "user rules stored in Cursor settings",
     "Copilot personal and organization instructions (GitHub UI)",
     "Claude Code managed settings",
+    "Cursor marketplace plugins (enabled set is not on disk)",
 ]
 SECRET_PATTERNS = [
     re.compile(r"\b(sk|rk|pk|ghp|gho|github_pat|xox[baprs]|AKIA)[A-Za-z0-9_\-]{8,}\b"),
@@ -84,7 +85,7 @@ def collect(root: Path, home: Path) -> list[dict[str, object]]:
         if placed in records or skipped(path):
             continue
         record = source_record(path, root, "user")
-        if ".cursor" in path.parts and "rules" in path.parts:
+        if under_dir(path.parts, (".cursor", "rules")):
             record["kind"] = "user-rule"
             record["layer"] = "user"
             record["ecosystems"] = ["cursor"]
@@ -109,6 +110,8 @@ def walk_instruction_files(root: Path) -> list[Path]:
             elif name.endswith(".mdc") and under_dir(parts, (".cursor", "rules")):
                 found.append(path)
             elif name.endswith(".md") and under_dir(parts, (".claude", "rules")):
+                found.append(path)
+            elif is_rule_file_name(name) and directory.name == "rules" and is_plugin_rules_dir(directory):
                 found.append(path)
             elif name == "SKILL.md" and "skills" in parts:
                 found.append(path)
@@ -142,7 +145,66 @@ def walk_user_instruction_files(home: Path) -> list[Path]:
             for path in sorted(copilot_instructions.rglob("*.instructions.md"))
             if not skipped(path)
         )
+    for rel in (
+        Path(".cursor") / "skills",
+        Path(".claude") / "skills",
+        Path(".agents") / "skills",
+        Path(".copilot") / "skills",
+        Path(".gemini") / "skills",
+    ):
+        found.extend(walk_skill_files(home / rel))
+    found.extend(walk_local_plugin_files(home / ".cursor" / "plugins" / "local"))
     return found
+
+
+def walk_skill_files(directory: Path) -> list[Path]:
+    if not directory.is_dir():
+        return []
+    return [
+        path
+        for path in sorted(directory.rglob("SKILL.md"))
+        if not skipped(path) and "skills-cursor" not in path.parts
+    ]
+
+
+def walk_local_plugin_files(directory: Path) -> list[Path]:
+    if not directory.is_dir():
+        return []
+    found: list[Path] = []
+    for path in sorted(directory.rglob("*")):
+        if not path.is_file() or skipped(path):
+            continue
+        if path.name == "SKILL.md" or is_cursor_plugin_rule_path(path):
+            found.append(path)
+    return found
+
+
+def is_rule_file_name(name: str) -> bool:
+    if name == "SKILL.md":
+        return False
+    return name.endswith(".mdc") or name.endswith(".markdown") or name.endswith(".md")
+
+
+def is_cursor_plugin_rule_path(path: Path) -> bool:
+    if path.parent.name != "rules" or not is_rule_file_name(path.name):
+        return False
+    parts = path.parts
+    return any(
+        parts[index] == ".cursor" and index + 1 < len(parts) and parts[index + 1] == "plugins"
+        for index in range(len(parts) - 1)
+    )
+
+
+def is_plugin_rules_dir(directory: Path) -> bool:
+    if under_dir(directory.parts, (".cursor", "plugins")):
+        return True
+    return (directory.parent / ".cursor-plugin").is_dir()
+
+
+def is_plugin_pack_rule(path: Path) -> bool:
+    if path.parent.name != "rules" or not is_rule_file_name(path.name):
+        return False
+    return (path.parent.parent / ".cursor-plugin").is_dir()
 
 
 def under_dir(parts: tuple[str, ...], needle: tuple[str, ...]) -> bool:
@@ -222,6 +284,8 @@ def kind_for(path: Path) -> str:
         return "copilot-instructions"
     if name.endswith(".instructions.md"):
         return "copilot-path-instructions"
+    if is_cursor_plugin_rule_path(path) or is_plugin_pack_rule(path):
+        return "plugin-rule"
     if name == "SKILL.md" or parent == "commands":
         return "skill"
     if parent == "rules" and grand == ".claude" and name.endswith(".md"):
@@ -259,6 +323,14 @@ def ecosystems_for(kind: str, path: Path | None = None) -> list[str]:
     if kind == "skill":
         if ".claude" in parts:
             return ["claude-code"]
+        if ".codex" in parts:
+            return ["codex"]
+        if ".copilot" in parts:
+            return ["copilot"]
+        if ".gemini" in parts:
+            return ["gemini"]
+        if ".agents" in parts:
+            return ["cursor", "codex", "copilot", "gemini"]
         return ["cursor"]
     return ["cursor"]
 
@@ -323,6 +395,11 @@ def parse_frontmatter(block: str) -> dict[str, object]:
 
 def classify(meta: dict[str, object], kind: str) -> tuple[str, list[str]]:
     if kind == "skill":
+        if meta.get("disable-model-invocation") is True:
+            return "manual", []
+        description = meta.get("description")
+        if isinstance(description, str) and description.strip():
+            return "intelligent", []
         return "manual", []
     if kind == "copilot-path-instructions":
         globs = normalize_globs(meta.get("applyTo", meta.get("globs")))

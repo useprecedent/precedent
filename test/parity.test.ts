@@ -59,7 +59,45 @@ describe("python / ts inventory parity", () => {
       "user rules stored in Cursor settings",
       "Copilot personal and organization instructions (GitHub UI)",
       "Claude Code managed settings",
+      "Cursor marketplace plugins (enabled set is not on disk)",
     ]);
+  });
+
+  it("matches python inventory for plugin rules and user skills", () => {
+    const home = tempDir("precedent-home-");
+    const root = join(home, "projects", "app");
+    write(join(root, "AGENTS.md"), "Root agents file.\n");
+    write(
+      join(root, ".cursor", "plugins", "ship", "rules", "always.mdc"),
+      "---\nalwaysApply: true\n---\n\nBind HTTP servers to 0.0.0.0.\n",
+    );
+    write(
+      join(root, ".cursor", "plugins", "ship", "skills", "deploy", "SKILL.md"),
+      "---\nname: deploy\ndescription: Deploy the app\n---\n\nDeploy skill.\n",
+    );
+    write(join(root, "pack", ".cursor-plugin", "plugin.json"), "{\"name\":\"pack\"}\n");
+    write(
+      join(root, "pack", "rules", "always.mdc"),
+      "---\nalwaysApply: true\n---\n\nPack always-on plugin rule.\n",
+    );
+    write(join(home, ".cursor", "skills", "personal", "SKILL.md"), "Personal cursor skill.\n");
+    write(join(home, ".cursor", "skills-cursor", "builtin", "SKILL.md"), "Ignore builtin.\n");
+    write(
+      join(home, ".cursor", "plugins", "local", "acme", "rules", "local-always.mdc"),
+      "---\nalwaysApply: true\n---\n\nLocal plugin always-on rule.\n",
+    );
+
+    const python = JSON.parse(
+      execFileSync("python3", [script, "--root", root, "--home", home], { encoding: "utf8" }),
+    ) as { sources: unknown[] };
+    const ts = collectInventory({
+      root,
+      home,
+      includeUserRules: true,
+      includeAncestors: true,
+      extraRules: [],
+    });
+    assert.deepEqual(ts.sources, python.sources);
   });
 
   it("matches python inventory on the multi-agent fixture", () => {

@@ -18,7 +18,7 @@ Ask for effective policy, conflicting rules, or invoke `/precedent` if your agen
 | --- | --- |
 | **Conflicts** | Two always-on instructions disagree; documented precedence picks a winner (project over user, team over project). |
 | **Unresolved** | Same layer, no documented order (for example always-on `.mdc` vs covering `AGENTS.md` in one directory). The agent must ask before acting. |
-| **Left out** | Real sources that are not in force for this task: nested `AGENTS.md` outside `appliesUnder`, glob/intelligent/manual/plugin rules, or contextual user rules (PR workflow, browser checks, and similar). |
+| **Left out** | Real sources that are not in force for this task: nested `AGENTS.md` outside `appliesUnder`, glob/intelligent/manual rules, requestable plugin rules and skills, or contextual user rules (PR workflow, browser checks, and similar). Always-on plugin rules stay in the merge. |
 
 When **Conflicts** is empty, the report should still say whether always-on instructions agree. **Left out** is expected on monorepos with per-app `AGENTS.md` files.
 

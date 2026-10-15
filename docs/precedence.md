@@ -12,7 +12,11 @@ Among `AGENTS.md` / `CLAUDE.md`, higher specificity wins in the same chain. Nest
 
 Always-on `.cursor/rules/*.mdc` and covering `AGENTS.md` / `CLAUDE.md` in the same directory are one layer. Cursor has not documented an order between them.
 
-Glob, intelligent, and manual `.mdc` files, and requestable skills, stay out of the v1 merge unless the task matches them.
+Glob, intelligent, and manual `.mdc` files stay out of the v1 merge unless the task matches them.
+
+Always-on Cursor plugin rules (`alwaysApply: true` under `.cursor/plugins/**/rules`, a `.cursor-plugin` pack, or `~/.cursor/plugins/local`) join the always-on merge. They sit in the project layer when the pack is in the repo, and the user layer when it is under home. Cursor has not documented an order between always-on plugin rules and covering `AGENTS.md` / `CLAUDE.md` in the same layer.
+
+Requestable plugin rules and skills stay out of the merge unless this task matches their description or the user named them. Marketplace plugin cache (`~/.cursor/plugins/cache`) is not inventoried: the enabled-plugin set is not a stable file API.
 
 ## Claude Code (checked 2026-10-15)
 
@@ -58,6 +62,7 @@ A symlink is never a second authority (`aliasOf`).
 ## Out of v1
 
 - Glob / intelligent / manual activation, including Copilot `applyTo` and Claude `paths`
-- Requestable skills and plugin skills as a merged fourth source
+- Requestable skills and requestable plugin rules (description-gated or named-only)
+- Cursor marketplace plugin cache and the enabled-plugin set
 - GitHub organization Copilot instructions and Cursor team rules, unless passed as `--extra-rules`
 - Proof that a model complied

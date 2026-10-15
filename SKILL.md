@@ -24,7 +24,7 @@ npx --yes @useprecedent/precedent --root .
 
 The CLI sees files only. After it runs, add every team rule and every user rule from this chat that is not already in sources. Give team rules layer `team` and specificity 0. Give settings user rules layer `user` and specificity 0.
 
-`missingFromDisk` names groups the files cannot see (Cursor team/settings rules, Copilot GitHub UI instructions, Claude managed settings). A file under `~/.cursor/rules` is already in sources as `user-rule`. User-home Claude, Codex, and Copilot files are inventoried when the CLI is run with user rules enabled.
+`missingFromDisk` names groups the files cannot see (Cursor team/settings rules, Copilot GitHub UI instructions, Claude managed settings, Cursor marketplace plugin enablement). A file under `~/.cursor/rules` is already in sources as `user-rule`. User-home Claude, Codex, Copilot, Gemini, and skill files are inventoried when the CLI is run with user rules enabled. Always-on Cursor plugin rules on disk (`.cursor/plugins`, `.cursor-plugin` packs, `~/.cursor/plugins/local`) are in the file inventory.
 
 Default compile is every ecosystem. Pass `--ecosystem cursor` (or `claude-code`, `codex`, `copilot`, `gemini`) to leave other vendors out of the merge.
 
@@ -44,7 +44,7 @@ Among document files (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, repo-wide Copilot i
 
 Always-on project rules and the covering document files (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, repo-wide Copilot instructions) in the same directory are one layer. When they disagree, the conflict is unresolved unless a vendor has documented an order for that pair. Cursor has not documented an order between always-on `.mdc` files and covering `AGENTS.md`. Copilot’s own priority list is Copilot-only.
 
-Leave a glob, intelligent, manual, path-scoped Copilot/Claude rule, or requestable plugin/skill out of the merge unless this task matches its globs, its description, or the user named it.
+Always-on plugin rules join the merge at project (repo pack) or user (local plugin) layer. Leave a glob, intelligent, manual, path-scoped Copilot/Claude rule, or requestable plugin/skill out of the merge unless this task matches its globs, its description, or the user named it.
 
 See [docs/precedence.md](docs/precedence.md).
 

@@ -73,7 +73,7 @@ Reload the window or start a new chat. Ask about effective policy or conflicting
 npx @useprecedent/precedent --root . --ecosystem cursor
 ```
 
-Always-on in a `--ecosystem cursor` compile: always-on `.cursor/rules/*.mdc`, `AGENTS.md`, root `CLAUDE.md` (not `.claude/CLAUDE.md`), and `~/.cursor/rules`. Glob, intelligent, and manual `.mdc` files stay out of v1.
+Always-on in a `--ecosystem cursor` compile: always-on `.cursor/rules/*.mdc`, always-on Cursor plugin rules (`.cursor/plugins/**/rules`, `.cursor-plugin` packs, `~/.cursor/plugins/local`), `AGENTS.md`, root `CLAUDE.md` (not `.claude/CLAUDE.md`), and `~/.cursor/rules`. Glob, intelligent, and manual `.mdc` files, requestable plugin rules, and skills stay out of v1 until a task matches them.
 
 Cursor-only: after the file compile, the skill adds team rules and settings-only user rules from this chat. Files under `~/.cursor/rules` are already inventoried as user rules.
 
@@ -177,8 +177,9 @@ python3 scripts/compile_instructions.py --root .
 - `.cursor/rules/*.mdc` — classified as always / glob / intelligent / manual
 - `.claude/CLAUDE.md` and `.claude/rules/*.md` (Claude Code; `paths` frontmatter is glob)
 - `.github/copilot-instructions.md` and `.github/instructions/**/*.instructions.md` (Copilot; `applyTo` is glob)
-- `.cursor/skills/**/SKILL.md` and `.claude/skills/**/SKILL.md` — inventoried, not merged in v1
-- User-home files when `--user-rules` is enabled (default for local CLI; off in the Action): `~/.cursor/rules`, `~/.claude/`, `~/.codex/`, `~/.copilot/`
+- `.cursor/skills/**/SKILL.md`, `.claude/skills/**/SKILL.md`, and `.agents/skills/**/SKILL.md` — inventoried; requestable, not merged unless the task matches
+- Cursor plugin rules: `.cursor/plugins/**/rules/*.{mdc,md}`, and `rules/` next to a `.cursor-plugin` pack. Always-on plugin rules join the merge; glob / intelligent / manual plugin rules stay out of v1
+- User-home files when `--user-rules` is enabled (default for local CLI; off in the Action): `~/.cursor/rules`, `~/.cursor/skills`, `~/.cursor/plugins/local`, `~/.claude/`, `~/.agents/skills`, `~/.codex/`, `~/.copilot/`, `~/.gemini/skills`. `~/.cursor/skills-cursor` and `~/.cursor/plugins/cache` are not inventoried
 
 Symlinks are recorded with `aliasOf` so duplicate paths are not separate authorities. Living merge order: [docs/precedence.md](docs/precedence.md).
 
@@ -187,6 +188,7 @@ Symlinks are recorded with `aliasOf` so duplicate paths are not separate authori
 - Cursor team rules and settings-only user rules
 - Copilot personal and organization instructions (GitHub UI)
 - Claude Code managed settings
+- Cursor marketplace plugins (which cached plugins apply to this workspace)
 
 Pass chat-only rules without faking paths:
 
@@ -201,7 +203,7 @@ npx @useprecedent/precedent --root . --extra-rules extra-rules.json
 1. Team over project over user (Cursor layers; extra-rules from chat)
 2. Among document files (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, repo-wide Copilot instructions), higher specificity wins in the same chain; nested files apply only under `appliesUnder`. `.claude/` and `.github/` config directories count as the project root, not as nested app paths
 3. Always-on project rules and covering documents in the same directory are one layer — conflicts there are **unresolved**, including Cursor `.mdc` vs `AGENTS.md` and Copilot instructions vs `AGENTS.md`
-4. Glob, intelligent, manual, path-scoped Copilot/Claude rules, and skills are excluded from the merge in v1
+4. Glob, intelligent, manual, path-scoped Copilot/Claude rules, and requestable skills/plugin rules are excluded from the merge in v1. Always-on plugin rules join the merge; clash with covering `AGENTS.md` / `CLAUDE.md` at the same layer is unresolved
 5. `--ecosystem all` (default) compiles every inventoried always-on file. `--ecosystem cursor|claude-code|codex|copilot|gemini` leaves other ecosystems out of the merge
 
 ## CLI flags
@@ -271,6 +273,9 @@ on:
       - "**/GEMINI.md"
       - "**/AGENTS.override.md"
       - ".cursor/rules/**"
+      - ".cursor/plugins/**"
+      - ".cursor/skills/**"
+      - ".agents/skills/**"
       - ".claude/**"
       - ".github/copilot-instructions.md"
       - ".github/instructions/**"
@@ -294,7 +299,8 @@ The Action compiles from git only. Team rules and Cursor settings user rules are
 ## Limits
 
 - No proof that the model followed the effective policy
-- Glob / intelligent / manual activation, path-scoped Copilot/Claude rules, and plugin skills are not merged in v1
+- Glob / intelligent / manual activation, path-scoped Copilot/Claude rules, and requestable skills/plugin rules are not merged in v1
+- Cursor marketplace plugin cache is not inventoried
 - Semantic v1 is a local heuristic (no API calls in the default compile path)
 - Copilot organization instructions and Cursor team rules are out of git compiles unless passed as `--extra-rules`
 
