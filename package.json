@@ -1,7 +1,7 @@
 {
   "name": "@useprecedent/precedent",
-  "version": "0.1.3",
-  "description": "Compile Cursor AGENTS.md, CLAUDE.md, and .cursor/rules; report always-on instruction conflicts.",
+  "version": "0.1.4",
+  "description": "Compile Cursor AGENTS.md, CLAUDE.md, and .cursor/rules; report always-on conflicts. CLI, GitHub Action, and Cursor skill.",
   "author": "Precedent",
   "type": "module",
   "license": "Apache-2.0",
@@ -21,6 +21,7 @@
   },
   "files": [
     "bin",
+    "dist",
     "src",
     "scripts",
     "SKILL.md",
@@ -40,8 +41,14 @@
     "github-action"
   ],
   "scripts": {
+    "build": "node scripts/build.mjs",
+    "prepublishOnly": "npm run build",
     "precedent": "node --experimental-strip-types src/cli.ts",
+    "smoke:packaged-cli": "node scripts/smoke-packaged-cli.mjs",
     "test": "python3 scripts/test_compile_instructions.py && node --experimental-strip-types --test test/*.test.ts",
     "compile": "node --experimental-strip-types src/cli.ts"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
   }
 }

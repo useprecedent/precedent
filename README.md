@@ -16,11 +16,19 @@ The compiler does not guarantee model compliance. It records which statements sh
 | GitHub Action | PR comment on policy file changes; optional `fail-on-unresolved` |
 | Skill | Same compile flow inside a Cursor session ([SKILL.md](SKILL.md)) |
 
+### Which interface?
+
+| You want… | Use |
+| --- | --- |
+| Effective policy and conflicts while coding in Cursor (including team rules and settings-only user rules from chat) | [Cursor skill](#install-the-cursor-skill) |
+| Scripts, local checks, or JSON for other tools | [CLI](#install-cli) |
+| PR comments when `AGENTS.md`, `CLAUDE.md`, or `.cursor/rules` change in git | [GitHub Action](#github-action) |
+
 **Measured:** file inventory, activation mode, symlinks, documented layer/specificity.
 
 **Inferred:** semantic contradiction between always-on statements (paraphrases of the same action are not conflicts).
 
-## Install
+## Install (CLI)
 
 ```bash
 npx @useprecedent/precedent
@@ -36,6 +44,28 @@ Node 22+. Inventory JSON is also available from Python (same shape as the skill 
 ```bash
 python3 scripts/compile_instructions.py --root .
 ```
+
+## Install the Cursor skill
+
+Cursor loads skills from `~/.cursor/skills/<name>/SKILL.md` (global) or `.cursor/skills/<name>/` (project). The skill ships in this repo and in the npm package, but it is not registered until you install it.
+
+**Global (all workspaces):**
+
+```bash
+npx skills add useprecedent/precedent -a cursor -g --skill precedent -y
+```
+
+**This repo only (from project root):**
+
+```bash
+npx skills add useprecedent/precedent -a cursor --skill precedent -y
+```
+
+Cloning **this** repository already includes `.cursor/skills/precedent/` (symlink to `SKILL.md`) so the skill is available in project scope without a global install.
+
+Start a new Cursor chat (or reload the window) so the agent picks up the skill. Then ask about conflicting rules, effective policy, or invoke `/precedent` if your Cursor build exposes slash skills.
+
+The skill runs the same compiler as the CLI and adds team rules and Cursor-settings user rules that are not on disk. See [SKILL.md](SKILL.md) for the full flow.
 
 ## Inputs
 

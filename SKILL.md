@@ -5,6 +5,8 @@ description: Compile the effective Cursor instruction set for this workspace and
 
 # Precedent
 
+Install for Cursor (once): `npx skills add useprecedent/precedent -a cursor -g --skill precedent -y` — see [README](https://github.com/useprecedent/precedent#install-the-cursor-skill).
+
 Compile the instructions for the workspace you have open. Do not edit instruction files unless the user asks.
 
 ## Collect
