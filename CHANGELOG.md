@@ -4,6 +4,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 
 ## Unreleased
 
+## 1.1.0 - 2026-10-15
+
+npm `@useprecedent/precedent` is `1.1.0`. The GitHub Action moving tag remains `v1.4` until the follow-up release tag.
+
 ### Added
 
 - Skills and plugins as a fourth instruction source: always-on Cursor plugin rules join the merge; requestable skills and plugin rules are inventoried and left out until the task matches them.
