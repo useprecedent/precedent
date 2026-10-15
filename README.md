@@ -22,7 +22,7 @@ The compiler does not guarantee model compliance. It records which statements sh
 
 ## Use with your coding tool
 
-| You use… | Install the skill (global) | Compile only this tool |
+| You use… | Install the skill (global) | Leave other ecosystems out |
 | --- | --- | --- |
 | [Cursor](#cursor) | `npx skills add useprecedent/precedent -a cursor -g --skill precedent -y` | `--ecosystem cursor` |
 | [Claude Code](#claude-code) | `npx skills add useprecedent/precedent -a claude-code -g --skill precedent -y` | `--ecosystem claude-code` |
@@ -73,6 +73,8 @@ Reload the window or start a new chat. Ask about effective policy or conflicting
 npx @useprecedent/precedent --root . --ecosystem cursor
 ```
 
+Always-on in a `--ecosystem cursor` compile: always-on `.cursor/rules/*.mdc`, `AGENTS.md`, root `CLAUDE.md` (not `.claude/CLAUDE.md`), and `~/.cursor/rules`. Glob, intelligent, and manual `.mdc` files stay out of v1.
+
 Cursor-only: after the file compile, the skill adds team rules and settings-only user rules from this chat. Files under `~/.cursor/rules` are already inventoried as user rules.
 
 ### Claude Code
@@ -87,7 +89,7 @@ Start a new session or run `/reload-skills`. Ask the same questions or type `/pr
 npx @useprecedent/precedent --root . --ecosystem claude-code
 ```
 
-On disk: `CLAUDE.md` or `.claude/CLAUDE.md`, `.claude/rules/*.md`, `CLAUDE.local.md` (user layer), and `~/.claude/CLAUDE.md`. Managed and enterprise settings are not on disk.
+Always-on in a `--ecosystem claude-code` compile: `AGENTS.md`, `CLAUDE.md` or `.claude/CLAUDE.md`, always-on `.claude/rules/*.md`, `CLAUDE.local.md` (user layer), `~/.claude/CLAUDE.md`, and `~/.claude/rules/`. Path-scoped `.claude/rules` (`paths` frontmatter) stay out of v1. Managed and enterprise settings are not on disk.
 
 ### Codex
 
@@ -101,7 +103,7 @@ Start a new Codex session, then ask about effective policy or conflicting rules.
 npx @useprecedent/precedent --root . --ecosystem codex
 ```
 
-On disk: `AGENTS.md` / `AGENTS.override.md` in the repo (and ancestors), plus `~/.codex/AGENTS.md` or `~/.codex/AGENTS.override.md`. Precedent does not emulate Codex concatenation or the 32 KiB cap.
+Always-on in a `--ecosystem codex` compile: `AGENTS.md` / `AGENTS.override.md` in the repo (and ancestors), plus `~/.codex/AGENTS.md` or `~/.codex/AGENTS.override.md`. `AGENTS.md` is also in the Cursor, Claude Code, and Copilot ecosystems; `AGENTS.override.md` is Codex-only. Precedent does not emulate Codex concatenation or the 32 KiB cap.
 
 ### GitHub Copilot
 
@@ -115,7 +117,7 @@ Start a new Copilot session, then ask about effective policy or conflicting rule
 npx @useprecedent/precedent --root . --ecosystem copilot
 ```
 
-On disk: `.github/copilot-instructions.md`, path-scoped `.github/instructions/**/*.instructions.md` (`applyTo`; left out of v1), and `~/.copilot/` when user rules are on. Personal and organization instructions from the GitHub UI are not on disk.
+Always-on in a `--ecosystem copilot` compile: `.github/copilot-instructions.md`; `AGENTS.md`; `CLAUDE.md` / `.claude/CLAUDE.md`; `GEMINI.md`; always-on `.claude/rules/*.md`; and `~/.copilot/` when user rules are on. Path-scoped `.github/instructions/**/*.instructions.md` (`applyTo`) stay out of v1. Personal and organization instructions from the GitHub UI are not on disk.
 
 ### Gemini CLI
 
@@ -129,7 +131,7 @@ Start a new Gemini CLI session, then ask about effective policy or conflicting r
 npx @useprecedent/precedent --root . --ecosystem gemini
 ```
 
-On disk: `GEMINI.md` at the repo root, nested copies, and ancestors. Copilot CLI also reads `GEMINI.md`.
+Always-on in a `--ecosystem gemini` compile: `GEMINI.md` at the repo root, nested copies, and ancestors. Copilot also inventories `GEMINI.md`; it stays in a `--ecosystem copilot` compile.
 
 ### Without a skill
 
