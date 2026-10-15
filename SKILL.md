@@ -40,7 +40,7 @@ Compare statements that are in force for the files this task touches.
 
 A team rule wins over a project source. A project source wins over a user rule.
 
-Among `AGENTS.md` and `CLAUDE.md`, the higher specificity wins, and only against a less specific file in that same chain. A nested file applies under `appliesUnder`. Outside that directory, ignore it.
+Among document files (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, repo-wide Copilot instructions), the higher specificity wins, and only against a less specific file in that same chain. A nested file applies under `appliesUnder`. Outside that directory, ignore it.
 
 Always-on project rules and the covering document files (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, repo-wide Copilot instructions) in the same directory are one layer. When they disagree, the conflict is unresolved unless a vendor has documented an order for that pair. Cursor has not documented an order between always-on `.mdc` files and covering `AGENTS.md`. Copilot’s own priority list is Copilot-only.
 
