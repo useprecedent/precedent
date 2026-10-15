@@ -4,23 +4,21 @@
 
 # Precedent
 
-**Effective policy for this path.**
+Compile Cursor instruction files for a repository path, apply documented precedence, and report always-on semantic conflicts. Output is Markdown (human/PR) or JSON (automation).
 
-Precedent is the company and the product. We compile the Cursor instructions in force for a repository, name which always-on statements conflict, and show that on the pull request.
+The compiler does not guarantee model compliance. It records which statements should win and surfaces unresolved cases when Cursor’s docs do not define an order.
 
-We do not guarantee the model will comply. We compile what should win, then make policy drift visible.
+## Components
 
-Free for one person and one repo. No account. Team and Cloud come later.
-
-## Product
-
-| Surface | What it does |
+| Interface | Role |
 | --- | --- |
-| CLI | `npx @useprecedent/precedent` — Markdown report, or JSON |
-| GitHub Action | Comments when a PR changes always-on policy. Optional fail-on-unresolved |
-| Skill | Same compiler, for a local Cursor session |
+| CLI | `npx @useprecedent/precedent` — report or JSON |
+| GitHub Action | PR comment on policy file changes; optional `fail-on-unresolved` |
+| Skill | Same compile flow inside a Cursor session ([SKILL.md](SKILL.md)) |
 
-Honest labels: **measured** is file inventory and documented precedence. **inferred** is semantic contradiction.
+**Measured:** file inventory, activation mode, symlinks, documented layer/specificity.
+
+**Inferred:** semantic contradiction between always-on statements (paraphrases of the same action are not conflicts).
 
 ## Install
 
@@ -33,40 +31,59 @@ npx @useprecedent/precedent --root . --json
 npx @useprecedent/precedent --root . --inventory
 ```
 
-Node 22+ is required for `npx`. The measured inventory is also a Python script with the same JSON:
+Node 22+. Inventory JSON is also available from Python (same shape as the skill script):
 
 ```bash
 python3 scripts/compile_instructions.py --root .
 ```
 
-## What it sees
+## Inputs
 
-**Measured** (files on disk, documented precedence):
+**On disk (default compile):**
 
-- `AGENTS.md` / `CLAUDE.md` (repo, nested, optional ancestors)
-- `.cursor/rules/*.mdc` classified as always / glob / intelligent / manual
-- `~/.cursor/rules` when `--user-rules` is on
-- Symlinks marked `aliasOf` so a copy is not a second authority
+- `AGENTS.md` / `CLAUDE.md` (repo root, nested paths, optional ancestors with `--no-ancestors` off)
+- `.cursor/rules/*.mdc` — classified as always / glob / intelligent / manual
+- `~/.cursor/rules` when `--user-rules` is enabled (default for local CLI; off in the Action)
 
-**Not on disk** (pass with `--extra-rules`):
+Symlinks are recorded with `aliasOf` so duplicate paths are not separate authorities.
+
+**Not on disk:**
 
 - Cursor team rules
 - User rules stored only in Cursor settings
 
-**Out of v1:** glob, intelligent, and manual rules; plugin skills.
+Pass chat-only rules without faking paths:
 
-## Precedence
+```bash
+npx @useprecedent/precedent --root . --extra-rules extra-rules.json
+```
+
+`extra-rules.json` is a JSON array of `{ "layer": "team" | "user", "title": string, "text": string }`.
+
+## Precedence (v1, always-on)
 
 1. Team over project over user
-2. Higher-specificity `AGENTS.md` / `CLAUDE.md` wins in the same chain; nested files apply under `appliesUnder`
-3. Always-on project rules and covering `AGENTS.md` / `CLAUDE.md` are one layer — disagreement is **unresolved**
-4. Glob / intelligent / manual stay out of the merge unless a later version matches this task
+2. Among `AGENTS.md` / `CLAUDE.md`, higher specificity wins in the same chain; nested files apply only under `appliesUnder`
+3. Always-on `.mdc` rules and covering `AGENTS.md` / `CLAUDE.md` in the same directory are one layer — conflicts there are **unresolved**
+4. Glob, intelligent, and manual rules are excluded from the merge in v1
 
-Contradiction detection is **inferred**. Paraphrases of the same action are not a conflict.
+## CLI flags
 
-## Sample report
+| Flag | Effect |
+| --- | --- |
+| `--root` | Repository root (default: cwd) |
+| `--path` | Path inside the repo to compile for (default: `.`) |
+| `--compare <dir>` | Report only findings new vs another checkout |
+| `--inventory` | Emit inventory JSON only |
+| `--json` | Full report JSON |
+| `--extra-rules <file>` | Team/user rules from session |
+| `--no-user-rules` | Skip `~/.cursor/rules` |
+| `--no-ancestors` | Skip ancestor `AGENTS.md` / `CLAUDE.md` |
+| `--fail-on-unresolved` | Exit 1 if unresolved always-on conflicts exist |
 
-CLI and the GitHub Action share one schema. Empty PR deltas use a short compile note; PRs with new conflicts expand scope and numbered findings.
+## Report format
+
+CLI and Action share one Markdown schema. Empty PR deltas use a short note; PRs with new conflicts include full scope sections and numbered findings.
 
 Empty delta (typical Action comment):
 
@@ -99,7 +116,7 @@ New conflict on a PR (abbreviated):
 
 ## GitHub Action
 
-Comment-only by default. Optionally fail the check.
+Comment-only by default. Pin a release tag (see [releases](https://github.com/useprecedent/precedent/releases)).
 
 ```yaml
 name: Precedent
@@ -126,28 +143,18 @@ jobs:
           fail-on-unresolved: false
 ```
 
-## Company
+The Action compiles from git only. Team rules and Cursor settings user rules are out of scope unless committed or passed via a custom workflow that supplies `--extra-rules`.
 
-Precedent sells **effective policy**, not tokens and not model obedience.
+## Limits
 
-| Plan | Shape |
-| --- | --- |
-| Free | One person, one repo, no card. CLI, skill, Action |
-| Team | Flat monthly, not per seat. Org scans, CI, dashboard |
-| Enterprise | VPC, SSO, audit export, enforced golden policy |
+- No proof that the model followed the effective policy
+- Glob / intelligent / manual activation and plugin skills are not merged in v1
+- Semantic v1 is a local heuristic (no API calls in the default compile path)
 
-Free-tier compiles run on the machine. Nothing is sent to a Precedent server. Semantic v1 is a local heuristic.
+## Runtime
 
-## Skill
-
-See [SKILL.md](SKILL.md). Session-start compile is noisy — keep it opt-in.
-
-## What it cannot see
-
-- Team rules, unless you pass `--extra-rules` or paste them into chat for the skill
-- Whether the model actually obeyed the effective policy
-- Glob / intelligent / manual matches (v2)
+Compile and inventory run on the host running the CLI or Action. The default Action does not send repository content to a third-party Precedent service.
 
 ## License
 
-Apache-2.0. Copyright 2026 Precedent.
+Apache-2.0. See [LICENSE](LICENSE).

@@ -13,7 +13,7 @@ Compile the instructions for the workspace you have open. Do not edit instructio
 python3 scripts/compile_instructions.py --root .
 ```
 
-Or the product CLI (same inventory JSON, plus the Markdown / semantic report):
+Or the npm CLI (same inventory JSON, plus Markdown and semantic findings):
 
 ```
 npx --yes @useprecedent/precedent --root . --inventory

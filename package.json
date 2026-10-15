@@ -1,7 +1,7 @@
 {
   "name": "@useprecedent/precedent",
   "version": "0.1.2",
-  "description": "Precedent — effective policy for this path. Compile Cursor instructions and report always-on conflicts.",
+  "description": "Compile Cursor AGENTS.md, CLAUDE.md, and .cursor/rules; report always-on instruction conflicts.",
   "author": "Precedent",
   "type": "module",
   "license": "Apache-2.0",
