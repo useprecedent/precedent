@@ -1,6 +1,6 @@
 {
   "name": "@useprecedent/precedent",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Compile Cursor AGENTS.md, CLAUDE.md, and .cursor/rules; report always-on instruction conflicts.",
   "author": "Precedent",
   "type": "module",
