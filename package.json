@@ -17,7 +17,7 @@
     "access": "public"
   },
   "bin": {
-    "precedent": "./bin/precedent.js"
+    "precedent": "bin/precedent.js"
   },
   "files": [
     "bin",
