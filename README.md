@@ -274,6 +274,7 @@ on:
       - "**/AGENTS.override.md"
       - ".cursor/rules/**"
       - ".cursor/plugins/**"
+      - "**/.cursor-plugin/**"
       - ".cursor/skills/**"
       - ".agents/skills/**"
       - ".claude/**"
