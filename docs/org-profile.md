@@ -17,7 +17,7 @@ This organization publishes [useprecedent/precedent](https://github.com/useprece
 | Interface | Install |
 | --- | --- |
 | CLI | `npx @useprecedent/precedent` |
-| GitHub Action | `uses: useprecedent/precedent@v1.3` |
+| GitHub Action | `uses: useprecedent/precedent@v1.4` |
 | Skill | `npx skills add useprecedent/precedent` |
 
 License: Apache-2.0. Support: issues on [useprecedent/precedent](https://github.com/useprecedent/precedent). Security reports: private vulnerability reporting on that repository.
