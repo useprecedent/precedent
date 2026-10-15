@@ -1,6 +1,18 @@
 export type Layer = "team" | "project" | "user";
 
-export type Kind = "agents-md" | "claude-md" | "project-rule" | "user-rule" | "team-rule";
+export type Ecosystem = "cursor" | "claude-code" | "codex" | "copilot" | "gemini";
+
+export type Kind =
+  | "agents-md"
+  | "claude-md"
+  | "gemini-md"
+  | "project-rule"
+  | "user-rule"
+  | "team-rule"
+  | "copilot-instructions"
+  | "copilot-path-instructions"
+  | "claude-rule"
+  | "skill";
 
 export type Activation = "always" | "glob" | "intelligent" | "manual";
 
@@ -16,6 +28,7 @@ export type Source = {
   path: string;
   kind: Kind;
   layer: Layer;
+  ecosystems: Ecosystem[];
   activation: Activation;
   specificity: number;
   appliesUnder: string | null;
@@ -87,6 +100,7 @@ export type CompileOptions = {
   includeUserRules: boolean;
   includeAncestors: boolean;
   extraRules: ExtraRule[];
+  ecosystem: "all" | Ecosystem;
 };
 
 export type CliOptions = CompileOptions & {

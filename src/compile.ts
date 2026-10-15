@@ -15,7 +15,12 @@ export function compile(options: CompileOptions): Report {
     includeAncestors: options.includeAncestors,
     extraRules: options.extraRules,
   });
-  const { inForce, leftOut } = selectInForce(inventory.sources, root, path);
+  const { inForce, leftOut } = selectInForce(
+    inventory.sources,
+    root,
+    path,
+    options.ecosystem ?? "all",
+  );
   const statements = extractStatements(inForce);
   const findings = findSemanticConflicts(inForce, statements);
 

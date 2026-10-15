@@ -1,8 +1,8 @@
 name: Precedent
-description: Precedent — comment on PRs when always-on Cursor policy conflicts
+description: Compile instruction files and comment when always-on policy conflicts
 author: Precedent
 branding:
-  icon: git-pull-request
+  icon: shield
   color: blue
 inputs:
   fail-on-unresolved:

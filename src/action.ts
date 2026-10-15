@@ -81,6 +81,7 @@ async function main(): Promise<void> {
     includeUserRules: false,
     includeAncestors: false,
     extraRules: [],
+    ecosystem: "all",
   });
 
   let added = { conflicts: current.conflicts, unresolved: current.unresolved };
@@ -110,6 +111,7 @@ async function main(): Promise<void> {
       includeUserRules: false,
       includeAncestors: false,
       extraRules: [],
+      ecosystem: "all",
     });
     added = newFindings(current, baseline);
   }
