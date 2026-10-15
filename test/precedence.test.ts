@@ -33,6 +33,23 @@ describe("precedence", () => {
     assert.equal(report.unresolved.length, 0);
   });
 
+  it("leaves Copilot path instructions without applyTo out of the always-on merge", () => {
+    const root = tempDir();
+    write(root, "AGENTS.md", "The agent runs terminal commands. Do not ask the user to run them.\n");
+    write(
+      root,
+      ".github/instructions/general.instructions.md",
+      "I (the user) WILL RUN ALL TERMINAL COMMANDS YOU WILL NOT.\n",
+    );
+
+    const report = compile(options(root));
+    const pathInstructions = report.leftOut.find((item) => item.path === ".github/instructions/general.instructions.md");
+    assert.ok(pathInstructions);
+    assert.equal(pathInstructions.activation, "glob");
+    assert.equal(report.inForce.some((item) => item.path === ".github/instructions/general.instructions.md"), false);
+    assert.equal(report.unresolved.length, 0);
+  });
+
   it("leaves requestable skills out of the always-on merge", () => {
     const root = tempDir();
     write(root, "AGENTS.md", "Root policy is always on.");

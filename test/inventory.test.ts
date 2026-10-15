@@ -65,6 +65,7 @@ describe("inventory", () => {
       ".github/instructions/ts.instructions.md",
       "---\napplyTo: \"**/*.ts\"\n---\nTypeScript only.\n",
     );
+    write(root, ".github/instructions/general.instructions.md", "No applyTo frontmatter.\n");
     write(root, ".claude/CLAUDE.md", "Claude project file.");
     write(root, ".claude/rules/always.md", "Always-on Claude rule.");
     write(root, ".claude/rules/scoped.md", "---\npaths: src/**/*.ts\n---\nScoped Claude rule.\n");
@@ -87,6 +88,8 @@ describe("inventory", () => {
     assert.equal(byPath[".github/copilot-instructions.md"]?.appliesUnder, null);
     assert.equal(byPath[".github/instructions/ts.instructions.md"]?.activation, "glob");
     assert.deepEqual(byPath[".github/instructions/ts.instructions.md"]?.globs, ["**/*.ts"]);
+    assert.equal(byPath[".github/instructions/general.instructions.md"]?.activation, "glob");
+    assert.deepEqual(byPath[".github/instructions/general.instructions.md"]?.globs, []);
     assert.equal(byPath[".claude/CLAUDE.md"]?.kind, "claude-md");
     assert.deepEqual(byPath[".claude/CLAUDE.md"]?.ecosystems, ["claude-code", "copilot"]);
     assert.equal(byPath[".claude/CLAUDE.md"]?.appliesUnder, null);

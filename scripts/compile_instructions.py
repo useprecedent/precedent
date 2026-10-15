@@ -326,9 +326,7 @@ def classify(meta: dict[str, object], kind: str) -> tuple[str, list[str]]:
         return "manual", []
     if kind == "copilot-path-instructions":
         globs = normalize_globs(meta.get("applyTo", meta.get("globs")))
-        if globs:
-            return "glob", globs
-        return "always", []
+        return "glob", globs
     if kind == "claude-rule":
         globs = normalize_globs(meta.get("paths", meta.get("globs")))
         if globs:

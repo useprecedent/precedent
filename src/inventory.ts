@@ -294,8 +294,7 @@ function classify(meta: Frontmatter, kind: Kind): { activation: Source["activati
   if (kind === "skill") return { activation: "manual", globs: [] };
   if (kind === "copilot-path-instructions") {
     const globs = normalizeGlobs(meta.applyTo ?? meta.globs);
-    if (globs.length > 0) return { activation: "glob", globs };
-    return { activation: "always", globs: [] };
+    return { activation: "glob", globs };
   }
   if (kind === "claude-rule") {
     const globs = normalizeGlobs(meta.paths ?? meta.globs);
