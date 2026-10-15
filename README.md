@@ -223,6 +223,8 @@ npx @useprecedent/precedent --root . --extra-rules extra-rules.json
 
 CLI and Action share one Markdown schema ([docs/report-contract.md](docs/report-contract.md)). Empty PR deltas use a short note; PRs with new conflicts include full scope sections and numbered findings. Changing the schema is a major version.
 
+Live finding comment (screenshot + transcript): [docs/gold-action-comment.md](docs/gold-action-comment.md).
+
 Empty delta (typical Action comment):
 
 ```
@@ -242,14 +244,14 @@ No always-on conflicts in git on this head; none new relative to main.
 </details>
 ```
 
-New conflict on a PR (abbreviated):
+New conflict on a PR (live `pl-cmp` finding, abbreviated):
 
 ```
 ## Findings
 
 1. **who runs terminal commands** (`unresolved`, inferred)
-   - statement: The agent runs terminal commands. (`AGENTS.md:3`)
-   - statement: I (the user) WILL RUN ALL TERMINAL COMMANDS YOU WILL NOT. (`.cursor/rules/user-commands.mdc:4`)
+   - statement: The user runs terminal commands. (`.cursor/rules/user-runs-commands.mdc:1`)
+   - statement: The agent runs terminal commands required to inspect, test, and verify. Do not ask the user to run them. (`.cursor/rules/agent-runs-commands.mdc:1`)
 ```
 
 ## GitHub Action
