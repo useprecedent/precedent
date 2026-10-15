@@ -9,7 +9,11 @@ const distCli = join(packageRoot, "dist", "cli.js");
 const srcCli = join(packageRoot, "src", "cli.ts");
 const args = process.argv.slice(2);
 
-if (existsSync(distCli)) {
+function isInstalledPackage(root) {
+  return root.replaceAll("\\", "/").includes("/node_modules/");
+}
+
+if (existsSync(distCli) && isInstalledPackage(packageRoot)) {
   await import(pathToFileURL(distCli).href);
 } else {
   const child = spawn(process.execPath, ["--experimental-strip-types", srcCli, ...args], {
