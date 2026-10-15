@@ -80,6 +80,20 @@ describe("precedence", () => {
     assert.ok(cursor.leftOut.some((item) => item.path === ".claude/rules/always.md"));
   });
 
+  it("leaves .claude/CLAUDE.md and home ~/.claude/CLAUDE.md out of a cursor compile", () => {
+    const home = tempDir("precedent-home-");
+    const root = tempDir();
+    write(root, "CLAUDE.md", "Cursor covering document.");
+    write(root, ".claude/CLAUDE.md", "Always write tests. Practice TDD on every change.");
+    write(home, ".claude/CLAUDE.md", "User Claude file.");
+
+    const cursor = compile({ ...options(root), home, includeUserRules: true, ecosystem: "cursor" });
+    assert.ok(cursor.inForce.some((item) => item.path === "CLAUDE.md"));
+    assert.equal(cursor.inForce.some((item) => item.path.endsWith(".claude/CLAUDE.md") || item.path.endsWith(".claude\\CLAUDE.md")), false);
+    assert.ok(cursor.leftOut.some((item) => item.path === ".claude/CLAUDE.md"));
+    assert.ok(cursor.leftOut.some((item) => item.path.includes(".claude") && item.path.endsWith("CLAUDE.md") && item.path !== ".claude/CLAUDE.md"));
+  });
+
   it("keeps nested AGENTS.md out when compiling a path outside appliesUnder", () => {
     const root = tempDir();
     write(root, "AGENTS.md", "Root agents file.");

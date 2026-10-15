@@ -19,4 +19,11 @@ describe("shipped fixtures", () => {
     const behaviors = report.unresolved.map((item) => item.behavior).sort();
     assert.deepEqual(behaviors, ["when to add tests", "who runs terminal commands"]);
   });
+
+  it("leaves .claude/CLAUDE.md out of a cursor compile of the multi-agent fixture", () => {
+    const report = compile({ ...options(join(fixtures, "multi-agent")), ecosystem: "cursor" });
+    assert.equal(report.inForce.some((item) => item.path === ".claude/CLAUDE.md"), false);
+    assert.ok(report.leftOut.some((item) => item.path === ".claude/CLAUDE.md"));
+    assert.deepEqual(report.unresolved.map((item) => item.behavior), []);
+  });
 });

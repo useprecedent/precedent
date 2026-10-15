@@ -245,6 +245,10 @@ def ecosystems_for(kind: str, path: Path | None = None) -> list[str]:
     if kind == "agents-md":
         return ["cursor", "codex", "copilot", "claude-code"]
     if kind == "claude-md":
+        if ".claude" in parts:
+            return ["claude-code", "copilot"]
+        if name == "CLAUDE.local.md":
+            return ["claude-code"]
         return ["cursor", "claude-code", "copilot"]
     if kind == "claude-rule":
         return ["claude-code", "copilot"]

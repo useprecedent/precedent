@@ -88,6 +88,7 @@ describe("inventory", () => {
     assert.equal(byPath[".github/instructions/ts.instructions.md"]?.activation, "glob");
     assert.deepEqual(byPath[".github/instructions/ts.instructions.md"]?.globs, ["**/*.ts"]);
     assert.equal(byPath[".claude/CLAUDE.md"]?.kind, "claude-md");
+    assert.deepEqual(byPath[".claude/CLAUDE.md"]?.ecosystems, ["claude-code", "copilot"]);
     assert.equal(byPath[".claude/CLAUDE.md"]?.appliesUnder, null);
     assert.equal(byPath[".claude/rules/always.md"]?.kind, "claude-rule");
     assert.equal(byPath[".claude/rules/always.md"]?.activation, "always");
@@ -123,6 +124,8 @@ describe("inventory", () => {
     assert.ok(kinds.includes("agents-md"));
     assert.ok(kinds.includes("copilot-instructions"));
     assert.ok(sources.some((source) => source.layer === "user" && source.kind === "claude-md"));
+    const userClaude = sources.find((source) => source.kind === "claude-md" && source.layer === "user");
+    assert.deepEqual(userClaude?.ecosystems, ["claude-code", "copilot"]);
     const userCodex = sources.find((source) => source.kind === "agents-md" && source.layer === "user");
     assert.deepEqual(userCodex?.ecosystems, ["codex"]);
   });
@@ -141,6 +144,7 @@ describe("inventory", () => {
     }).sources;
     const byPath = Object.fromEntries(sources.map((source) => [source.path, source]));
     assert.equal(byPath["CLAUDE.local.md"]?.layer, "user");
+    assert.deepEqual(byPath["CLAUDE.local.md"]?.ecosystems, ["claude-code"]);
     assert.equal(byPath["CLAUDE.md"]?.layer, "project");
 
     const report = compile(options(root));
