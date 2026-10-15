@@ -1,6 +1,4 @@
-Public copy for [github.com/useprecedent](https://github.com/useprecedent). Live file: [`useprecedent/.github/profile/README.md`](https://github.com/useprecedent/.github/blob/main/profile/README.md). Keep these in sync.
-
----
+<!-- Draft of the github.com/useprecedent profile. Live file: useprecedent/.github/profile/README.md. Keep the body below in sync. Do not copy this comment to the live profile. -->
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/useprecedent/precedent/main/brand/mark.svg" alt="Precedent" width="64" height="64" />
