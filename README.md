@@ -177,7 +177,7 @@ python3 scripts/compile_instructions.py --root .
 - `.cursor/rules/*.mdc` — classified as always / glob / intelligent / manual
 - `.claude/CLAUDE.md` and `.claude/rules/*.md` (Claude Code; `paths` frontmatter is glob)
 - `.github/copilot-instructions.md` and `.github/instructions/**/*.instructions.md` (Copilot; `applyTo` is glob)
-- `.cursor/skills/**/SKILL.md`, `.claude/skills/**/SKILL.md`, and `.agents/skills/**/SKILL.md` — inventoried; requestable, not merged unless the task matches
+- Skills (`SKILL.md` under `.cursor/skills`, `.claude/skills`, `.agents/skills`, `.copilot/skills`, `.gemini/skills`, and plugin `skills/` dirs including `~/.cursor/plugins/local`) — inventoried; requestable, not merged unless the task matches. Frontmatter `description` is description-gated; `disable-model-invocation: true` stays named-only even when a description is set
 - Cursor plugin rules: `.cursor/plugins/**/rules/*.{mdc,md}`, and `rules/` next to a `.cursor-plugin` pack. Always-on plugin rules join the merge; glob / intelligent / manual plugin rules stay out of v1
 - User-home files when `--user-rules` is enabled (default for local CLI; off in the Action): `~/.cursor/rules`, `~/.cursor/skills`, `~/.cursor/plugins/local`, `~/.claude/`, `~/.agents/skills`, `~/.codex/`, `~/.copilot/`, `~/.gemini/skills`. `~/.cursor/skills-cursor` and `~/.cursor/plugins/cache` are not inventoried
 
@@ -295,12 +295,12 @@ jobs:
           fail-on-unresolved: false
 ```
 
-The Action compiles from git only. Team rules and Cursor settings user rules are out of scope unless committed or passed via a custom workflow that supplies `--extra-rules`.
+The Action compiles from git only. Team rules and Cursor settings user rules are out of scope unless committed or passed via a custom workflow that supplies `--extra-rules`. `.cursor/plugins/**` watches in-repo plugin rules and plugin skills; `**/.cursor-plugin/**` watches pack folders anywhere in the repo.
 
 ## Limits
 
 - No proof that the model followed the effective policy
-- Glob / intelligent / manual activation, path-scoped Copilot/Claude rules, and requestable skills/plugin rules are not merged in v1
+- Glob / intelligent / manual activation, path-scoped Copilot/Claude rules, and requestable skills/plugin rules are not merged in v1. Skills with `disable-model-invocation: true` stay named-only
 - Cursor marketplace plugin cache is not inventoried
 - Semantic v1 is a local heuristic (no API calls in the default compile path)
 - Copilot organization instructions and Cursor team rules are out of git compiles unless passed as `--extra-rules`

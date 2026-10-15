@@ -44,7 +44,7 @@ Among document files (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, repo-wide Copilot i
 
 Always-on project rules and the covering document files (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, repo-wide Copilot instructions) in the same directory are one layer. When they disagree, the conflict is unresolved unless a vendor has documented an order for that pair. Cursor has not documented an order between always-on `.mdc` files and covering `AGENTS.md`. Copilot’s own priority list is Copilot-only.
 
-Always-on plugin rules join the merge at project (repo pack) or user (local plugin) layer. Leave a glob, intelligent, manual, path-scoped Copilot/Claude rule, or requestable plugin/skill out of the merge unless this task matches its globs, its description, or the user named it.
+Always-on plugin rules join the merge at project (repo pack) or user (local plugin) layer. Leave a glob, intelligent, manual, path-scoped Copilot/Claude rule, or requestable plugin/skill out of the merge unless this task matches its globs, its description, or the user named it. A skill with `disable-model-invocation: true` is named-only even when it has a description.
 
 See [docs/precedence.md](docs/precedence.md).
 
