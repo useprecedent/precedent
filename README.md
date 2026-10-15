@@ -43,7 +43,7 @@ The skills CLI `-a` name and Precedent `--ecosystem` name are not always the sam
 3. Ask about effective policy or conflicting rules, or invoke `/precedent` if your agent exposes slash skills.
 4. The agent runs the compiler, prints **Conflicts** / **Unresolved** / **Left out**, and follows the winners. If **Unresolved** is non-empty, it should ask which statement to follow before doing that thing.
 
-The skill runs the same compiler as the CLI. After the file compile, it adds chat-only rules that are not on disk (Cursor team rules and settings user rules, when those appear in the session). Claude managed settings and Copilot GitHub UI instructions stay in `missingFromDisk` unless you pass `--extra-rules`.
+The skill runs the same compiler as the CLI. After the file compile, it adds chat-only rules that are not on disk when those appear in the session (Cursor team/settings rules, Claude managed settings, Copilot GitHub UI instructions). The CLI `--extra-rules` flag is the same escape hatch for automation, but those entries are Cursor-layer sources and only join `--ecosystem all` and `--ecosystem cursor` compiles.
 
 See [SKILL.md](SKILL.md) for the full flow. A worked monorepo example: [docs/session-report.md](docs/session-report.md).
 
@@ -147,7 +147,7 @@ npx @useprecedent/precedent --root . --ecosystem claude-code
 | Output | When | Includes chat-only rules |
 | --- | --- | --- |
 | Skill **Effective instructions** | Agent session | Yes, when the agent can see them (Cursor team/settings rules in Cursor chat) |
-| CLI / Action Markdown | Local CI or `npx` | No, unless `--extra-rules` |
+| CLI / Action Markdown | Local CI or `npx` | Only via `--extra-rules`, and only in `all` / `cursor` compiles |
 
 The skill uses sections **Conflicts**, **Unresolved**, and **Left out**. CLI and Action use the PR report schema (provenance, numbered findings).
 
