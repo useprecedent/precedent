@@ -6,6 +6,16 @@
 
 Instruction files for coding agents often disagree. Precedent finds them for a path in the repo, applies the order vendors have documented, and reports which statements should win.
 
+```bash
+npx @useprecedent/precedent
+```
+
+Live GitHub Action comment (subject redacted). Finding: who runs terminal commands (`unresolved`).
+
+<p align="center">
+  <img src="docs/gold-action-comment.png" alt="Precedent GitHub Action comment citing an unresolved conflict: who runs terminal commands" width="720" />
+</p>
+
 ## What it does
 
 Your agent does not read one rulebook. It can pick up `AGENTS.md`, Cursor rules, `CLAUDE.md`, Copilot instructions, Gemini files, plugin rules, and copies of those in your home folder — at the same time. Two of them can say opposite things. Example: “the agent runs terminal commands” vs “you will run every command.”

@@ -7,6 +7,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version
 ### Changed
 
 - README Action example pins `v1.5` (`03f2eff`).
+- README opens with `npx @useprecedent/precedent` and the gold Action comment screenshot.
 
 ## 1.1.0 - 2026-10-15
 
